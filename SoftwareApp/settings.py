@@ -91,12 +91,15 @@ if DATABASE_URL_VALUE:
     )
     
 if DATABASES['default']:
-    # Asegurar el motor
     DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
     DATABASES['default']['CONN_MAX_AGE'] = 600
     DATABASES['default']['OPTIONS'] = {
         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
     }
+else:
+    # Bloque de Respaldo: Si todo falla, al menos pon el ENGINE aquí.
+    # (Aunque esto podría no ser suficiente si el error ocurre antes de este punto)
+    DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
 
 
 
