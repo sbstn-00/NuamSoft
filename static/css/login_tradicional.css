@@ -385,3 +385,19 @@ body {
         font-size: 0.9rem;
     }
 }
+
+.login-background,
+.login-shapes {
+    pointer-events: none;
+}
+
+.login-card,
+.login-card * {
+    position: relative;
+    z-index: 2; 
+}
+
+.login-container {
+    position: relative;
+    z-index: 1;
+}
