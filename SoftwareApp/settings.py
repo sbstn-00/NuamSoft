@@ -77,18 +77,25 @@ WSGI_APPLICATION = 'SoftwareApp.wsgi.application'
 
 
 import dj_database_url
+import os
+
+
+DATABASE_URL = os.environ.get('MYSQL_URL')
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('MYSQL_URL')
-    )
+    'default': {}
 }
 
-# 1. Aseguramos que la configuración existe antes de modificarla
+
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.config(
+        default=DATABASE_URL
+    )
+
 if DATABASES['default']:
-    # 2. Añadimos o sobrescribimos las claves adicionales al diccionario resultante:
-    DATABASES['default']['ENGINE'] = 'django.db.backends.mysql' 
+    DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
     DATABASES['default']['CONN_MAX_AGE'] = 600
+
 
 
 AUTH_PASSWORD_VALIDATORS = [
