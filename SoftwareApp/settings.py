@@ -26,7 +26,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '.railway.app', 
     'softwareapp-production.up.railway.app', 
-]
+]       
 
 CSRF_TRUSTED_ORIGINS = [
     'https://softwareapp-production.up.railway.app',
@@ -79,10 +79,12 @@ WSGI_APPLICATION = 'SoftwareApp.wsgi.application'
 import dj_database_url
 
 DATABASES = {
-    'default': dj_database_url.config(
+  'default': dj_database_url.config(
         default=os.environ.get('MYSQL_URL'),
+        
+        ENGINE='django.db.backends.mysql', 
         conn_max_age=600,
-    )
+  ) 
 }
 
 
