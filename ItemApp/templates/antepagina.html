@@ -4,47 +4,228 @@
 {% block title %}Bienvenido a NUAM{% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" href="{% static 'css/antepagina.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/antepagina.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* --- Fondo Hero Moderno --- */
+.hero-section {
+  position: relative;
+  background: linear-gradient(135deg, #ff6a00 0%, #ff914d 100%);
+  color: #fff;
+  overflow: hidden;
+  padding: 4rem 0;
+}
+
+/* --- Animación de fondo --- */
+.hero-section::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), transparent 50%);
+  animation: floatBackground 8s ease-in-out infinite alternate;
+}
+
+@keyframes floatBackground {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-20px, 20px); }
+}
+
+/* --- Contenedor Principal --- */
+.hero-content {
+  text-align: left;
+  color: #fff;
+  z-index: 1;
+  position: relative;
+}
+
+.hero-icon {
+  font-size: 3.5rem;
+  color: #fff;
+  margin-right: 0.5rem;
+}
+
+.hero-title {
+  display: inline-block;
+  font-weight: 800;
+  font-size: 3.2rem;
+  letter-spacing: 1px;
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero-description {
+  font-size: 1rem;
+  max-width: 90%;
+  opacity: 0.9;
+}
+
+/* --- Lista de características --- */
+.features-list {
+  margin-top: 1.5rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.feature-item i {
+  color: #fff;
+}
+
+/* --- Tarjeta de autenticación --- */
+.auth-card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-card {
+  background: #fff;
+  color: #333;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  padding: 2.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-5px);
+}
+
+/* --- Encabezado --- */
+.auth-card-header h2 {
+  font-weight: 700;
+  color: #ff6600;
+}
+
+.auth-card-header p {
+  color: #777;
+}
+
+/* --- Botones --- */
+.auth-buttons {
+  margin-top: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-buttons a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 10px;
+  padding: 0.9rem 1.2rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-register {
+  background-color: #ff6600;
+  color: #fff;
+}
+
+.btn-register:hover {
+  background-color: #ff8533;
+}
+
+.btn-login {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.btn-login:hover {
+  background-color: #e6e6e6;
+}
+
+/* --- Divider --- */
+.auth-divider {
+  margin: 1.5rem 0;
+  text-align: center;
+  position: relative;
+}
+
+.auth-divider span {
+  background: #fff;
+  padding: 0 1rem;
+  color: #999;
+  position: relative;
+  z-index: 2;
+}
+
+.auth-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  background: #ddd;
+  z-index: 1;
+}
+
+/* --- Info rápida --- */
+.quick-info {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.quick-info .info-item i {
+  color: #ff6600;
+}
+
+/* --- Separador Ondulado --- */
+.wave-divider {
+  color: #fff;
+  transform: rotate(180deg);
+}
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="hero-section">
   <div class="container">
     <div class="row align-items-center min-vh-100">
-      <div class="col-lg-6">
+      <div class="col-lg-6 mb-5 mb-lg-0">
         <div class="hero-content">
-          <div class="logo-container mb-4">
+          <div class="logo-container mb-4 d-flex align-items-center">
             <i class="fas fa-chart-line hero-icon"></i>
             <h1 class="hero-title">NUAM</h1>
           </div>
           <p class="hero-subtitle">Sistema de Gestión de Datos Tributarios</p>
           <p class="hero-description">
-            Gestiona, organiza y analiza tus datos tributarios de manera eficiente y segura. 
-            Nuestra plataforma te permite mantener un control completo sobre tus clasificaciones 
-            y datos financieros.
+            Controla, clasifica y analiza tus datos tributarios con nuestra plataforma moderna, segura y fácil de usar. 
+            Diseñada para profesionales y empresas que buscan eficiencia y precisión.
           </p>
+
           <div class="features-list">
-            <div class="feature-item">
-              <i class="fas fa-check-circle"></i>
-              <span>Gestión de clasificaciones</span>
-            </div>
-            <div class="feature-item">
-              <i class="fas fa-check-circle"></i>
-              <span>Carga masiva de datos</span>
-            </div>
-            <div class="feature-item">
-              <i class="fas fa-check-circle"></i>
-              <span>Reportes y estadísticas</span>
-            </div>
-            <div class="feature-item">
-              <i class="fas fa-check-circle"></i>
-              <span>Interfaz intuitiva</span>
-            </div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Gestión de clasificaciones tributarias</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Carga masiva de datos</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Reportes inteligentes y gráficos</div>
+            <div class="feature-item"><i class="fas fa-check-circle"></i> Interfaz moderna y adaptable</div>
           </div>
         </div>
       </div>
-      
+
       <div class="col-lg-6">
         <div class="auth-card-container">
           <div class="auth-card">
@@ -52,34 +233,26 @@
               <h2>Bienvenido</h2>
               <p>Selecciona una opción para continuar</p>
             </div>
-            
+
             <div class="auth-buttons">
               <a href="{% url 'registro' %}" class="btn-register">
                 <i class="fas fa-user-plus"></i>
                 <span>Crear Cuenta</span>
                 <i class="fas fa-arrow-right"></i>
               </a>
-              
+
               <a href="{% url 'login' %}" class="btn-login">
                 <i class="fas fa-sign-in-alt"></i>
                 <span>Iniciar Sesión</span>
                 <i class="fas fa-arrow-right"></i>
               </a>
             </div>
-            
-            <div class="auth-divider">
-              <span>o</span>
-            </div>
-            
+
+            <div class="auth-divider"><span>o</span></div>
+
             <div class="quick-info">
-              <div class="info-item">
-                <i class="fas fa-shield-alt"></i>
-                <span>Seguro y confiable</span>
-              </div>
-              <div class="info-item">
-                <i class="fas fa-clock"></i>
-                <span>Disponible 24/7</span>
-              </div>
+              <div class="info-item"><i class="fas fa-shield-alt"></i> Seguro y confiable</div>
+              <div class="info-item"><i class="fas fa-clock"></i> Disponible 24/7</div>
             </div>
           </div>
         </div>
