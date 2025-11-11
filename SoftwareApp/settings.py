@@ -79,22 +79,27 @@ WSGI_APPLICATION = 'SoftwareApp.wsgi.application'
 import dj_database_url
 import os
 
-
-DATABASE_URL = os.environ.get('MYSQL_URL')
+DATABASE_URL_VALUE = os.environ.get('MYSQL_URL')
 
 DATABASES = {
     'default': {}
 }
 
-
-if DATABASE_URL:
+# 1. Intentar cargar y parsear la URL
+if DATABASE_URL_VALUE:
     DATABASES['default'] = dj_database_url.config(
-        default=DATABASE_URL
+        default=DATABASE_URL_VALUE
     )
 
+# 2. Si la configuración se cargó, forzar el ENGINE y CONN_MAX_AGE
 if DATABASES['default']:
     DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
     DATABASES['default']['CONN_MAX_AGE'] = 600
+else:
+    # 3. CONFIGURACIÓN DE RESPALDO (crucial si MYSQL_URL no se carga)
+    # Si la variable de Railway no se carga (DATABASE_URL_VALUE es None),
+    # aseguramos que al menos el ENGINE de MySQL esté aquí para evitar el error.
+    DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
 
 
 
