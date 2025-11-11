@@ -2,115 +2,169 @@
 {% load static %}
 
 {% block dashboard_title %}
-    Inicio
+    Panel Principal
 {% endblock %}
 
 {% block dashboard_page_title %}
-    Panel de Control Inteligente
+    Bienvenido, {{ user.first_name|default:user.username }}
 {% endblock %}
 
 {% block dashboard_content %}
-<div class="container-fluid mt-4">
-    <div class="row g-4">
+<div class="container-fluid">
 
-
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <i class="fas fa-users"></i>
-                <h5>Usuarios Activos</h5>
-                <p class="stat-number">128</p>
+    <!-- Sección de bienvenida -->
+    <div class="card mb-4 shadow-sm border-0 bg-light">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h4 class="fw-bold mb-1">👋 Hola {{ user.first_name|default:user.username }}</h4>
+                <p class="text-muted mb-0">Bienvenido al panel de control de <strong>NUAM</strong>.</p>
             </div>
+            <img src="{% static 'img/dashboard_welcome.svg' %}" alt="Bienvenida" width="150">
         </div>
-
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <i class="fas fa-database"></i>
-                <h5>Datos Cargados</h5>
-                <p class="stat-number">2.4K</p>
-            </div>
-        </div>
-
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <i class="fas fa-bug"></i>
-                <h5>Errores Detectados</h5>
-                <p class="stat-number text-danger">14</p>
-            </div>
-        </div>
-
-        <div class="col-md-3 col-sm-6">
-            <div class="stat-card">
-                <i class="fas fa-clock"></i>
-                <h5>Tareas Pendientes</h5>
-                <p class="stat-number text-warning">5</p>
-            </div>
-        </div>
-
-        <div class="col-lg-8">
-            <div class="card glass-card p-4">
-                <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i> Rendimiento Semanal</h5>
-                <canvas id="chartRendimiento"></canvas>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card glass-card p-4">
-                <h5 class="mb-3"><i class="fas fa-bell me-2"></i> Notificaciones</h5>
-                <ul class="notifications">
-                    <li><i class="fas fa-check-circle text-success"></i> Carga de datos completada.</li>
-                    <li><i class="fas fa-exclamation-triangle text-warning"></i> 2 archivos pendientes de validación.</li>
-                    <li><i class="fas fa-user-plus text-info"></i> Nuevo usuario registrado: <strong>analista02</strong>.</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Accesos rápidos -->
-        <div class="col-12 mt-4">
-            <div class="quick-access d-flex flex-wrap justify-content-center gap-3">
-                <a href="{% url 'crear_clasificacion' %}" class="btn-glass">
-                    <i class="fas fa-tags"></i> Clasificaciones
-                </a>
-                <a href="{% url 'carga_datos' %}" class="btn-glass">
-                    <i class="fas fa-upload"></i> Carga de Datos
-                </a>
-                <a href="{% url 'listar_datos_tributarios' %}" class="btn-glass">
-                    <i class="fas fa-table"></i> Datos Tributarios
-                </a>
-                <a href="#" class="btn-glass">
-                    <i class="fas fa-chart-bar"></i> Reportes
-                </a>
-            </div>
-        </div>
-
     </div>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 stat-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>Clasificaciones</h6>
+                            <h3>{{ total_clasificaciones|default:"0" }}</h3>
+                        </div>
+                        <i class="fas fa-layer-group fa-2x"></i>
+                    </div>
+                    <small><a href="{% url 'crear_clasificacion' %}" class="text-white-50">Ver más</a></small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 stat-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>Datos Cargados</h6>
+                            <h3>{{ total_datos|default:"0" }}</h3>
+                        </div>
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                    <small><a href="{% url 'listar_datos_tributarios' %}" class="text-white-50">Ver más</a></small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 stat-card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>Últimas Cargas</h6>
+                            <h3>{{ ultimas_cargas|length|default:"0" }}</h3>
+                        </div>
+                        <i class="fas fa-upload fa-2x"></i>
+                    </div>
+                    <small class="text-muted">Recientes esta semana</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 stat-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>Usuarios Activos</h6>
+                            <h3>{{ usuarios_activos|default:"1" }}</h3>
+                        </div>
+                        <i class="fas fa-user-check fa-2x"></i>
+                    </div>
+                    <small class="text-white-50">Últimas 24h</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold"><i class="fas fa-chart-pie me-2 text-primary"></i>Distribución por Clasificación</div>
+                <div class="card-body">
+                    <canvas id="chartClasificaciones" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold"><i class="fas fa-chart-line me-2 text-success"></i>Actividad Reciente</div>
+                <div class="card-body">
+                    <canvas id="chartActividad" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimos registros -->
+    {% if ultimas_cargas %}
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-light fw-bold"><i class="fas fa-clock me-2"></i>Últimos Datos Cargados</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Clasificación</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dato in ultimas_cargas %}
+                        <tr>
+                            <td>{{ dato.nombre_dato }}</td>
+                            <td><span class="badge bg-info">{{ dato.clasificacion.nombre }}</span></td>
+                            <td>$ {{ dato.monto|floatformat:2 }}</td>
+                            <td>{{ dato.creado_en|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('chartRendimiento').getContext('2d');
-new Chart(ctx, {
-    type: 'line',
+const ctx1 = document.getElementById('chartClasificaciones');
+new Chart(ctx1, {
+    type: 'pie',
     data: {
-        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        labels: ['IVA', 'Renta', 'Honorarios', 'Otro'],
         datasets: [{
-            label: 'Rendimiento',
-            data: [12, 19, 15, 22, 30, 25, 28],
-            borderColor: '#9ecbff',
-            backgroundColor: 'rgba(158, 203, 255, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3
+            data: [40, 25, 20, 15],
+            backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8']
         }]
     },
-    options: {
-        scales: {
-            x: { ticks: { color: '#bbb' } },
-            y: { ticks: { color: '#bbb' } }
-        },
-        plugins: { legend: { labels: { color: '#ccc' } } }
-    }
+    options: { plugins: { legend: { position: 'bottom' } } }
+});
+
+const ctx2 = document.getElementById('chartActividad');
+new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+        datasets: [{
+            label: 'Cargas',
+            data: [2, 5, 3, 7, 4],
+            borderColor: '#28a745',
+            fill: false,
+            tension: 0.3
+        }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
 });
 </script>
 {% endblock %}
