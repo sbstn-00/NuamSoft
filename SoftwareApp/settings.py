@@ -76,29 +76,27 @@ WSGI_APPLICATION = 'SoftwareApp.wsgi.application'
 
 
 
-import dj_database_url
 import os
 
-# 1. Obtener la URL de Railway (que ya sabemos que es correcta si se carga)
-DATABASE_URL_VALUE = os.environ.get('MYSQL_URL')
-
+# Usamos las variables individuales que Railway proporciona
 DATABASES = {
-    'default': {}
+    'default': {
+        'ENGINE': 'django.db.backends.mysql', 
+        
+        # Leemos las variables directamente del entorno
+        'NAME': os.environ.get('MYSQL_DATABASE'),
+        'USER': os.environ.get('MYSQLUSER'),
+        'PASSWORD': os.environ.get('MYSQLPASSWORD'),
+        'HOST': os.environ.get('MYSQLHOST'), # ESTE DEBE SER mysql.railway.internal
+        'PORT': os.environ.get('MYSQLPORT', '3306'), 
+        
+        'CONN_MAX_AGE': 600,
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
+    }
 }
-
-# 2. Intentar cargar y parsear la URL
-if DATABASE_URL_VALUE:
-    DATABASES['default'] = dj_database_url.config(
-        default=DATABASE_URL_VALUE
-    )
-    
-# 3. GARANTIZAR EL MOTOR Y LOS EXTRAS (Esta es la línea clave que debe estar presente siempre)
-# El 'ENGINE' debe estar fuera de dj_database_url.config() pero debe ser asignado.
-DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
-DATABASES['default']['CONN_MAX_AGE'] = 600
-DATABASES['default']['OPTIONS'] = {
-    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-}
+# Elimina toda la lógica previa de dj_database_url.config() e if/else.
 
 
 
