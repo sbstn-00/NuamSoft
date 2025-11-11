@@ -1,273 +1,188 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Registro en PROTON{% endblock %}
+{% block title %}Registro en NuamSoft{% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" href="{% static 'css/registro.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body {
+    background: radial-gradient(circle at top left, #ffffff 0%, #ff6600 100%);
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .register-container {
+    position: relative;
+    width: 90%;
+    max-width: 850px;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 8px 40px rgba(255, 102, 0, 0.25);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    animation: fadeInUp 0.7s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .register-header {
+    background: linear-gradient(135deg, #ff6600, #ff8533);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .register-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .register-header p {
+    margin: 0.3rem 0 0;
+    opacity: 0.9;
+  }
+
+  .register-body {
+    padding: 2rem 3rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.3rem;
+  }
+
+  .form-group input, select {
+    width: 100%;
+    border: 1.5px solid #ddd;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-size: 0.95rem;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #ff6600;
+    box-shadow: 0 0 8px rgba(255, 102, 0, 0.4);
+  }
+
+  .btn-register {
+    width: 100%;
+    background: linear-gradient(90deg, #ff6600, #ff8533);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .btn-register:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 102, 0, 0.35);
+  }
+
+  .login-link {
+    text-align: center;
+    margin-top: 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .login-link a {
+    color: #ff6600;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="register-container">
-  <div class="register-background">
-    <div class="background-shapes">
-      <div class="shape shape-1"></div>
-      <div class="shape shape-2"></div>
-      <div class="shape shape-3"></div>
-    </div>
+  <div class="register-header">
+    <h1>Crear Cuenta en NuamSoft</h1>
+    <p>Empieza a gestionar con tecnología moderna y estilo</p>
   </div>
-  
-  <div class="container">
-    <div class="row justify-content-center align-items-center min-vh-100">
-      <div class="col-lg-8 col-xl-7">
-        <div class="register-card">
-          <div class="register-card-header">
-            <a href="{% url 'antepagina' %}" class="back-button">
-              <i class="fas fa-arrow-left"></i>
-            </a>
-            <div class="header-content">
-              <div class="logo-icon">
-                <i class="fas fa-user-plus"></i>
-              </div>
-              <h1>Crear Cuenta</h1>
-              <p>Completa el formulario para registrarte en PROTON</p>
-            </div>
-          </div>
 
-          {% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }} alert-modern">
-                {% if message.tags == 'success' %}
-                  <i class="fas fa-check-circle"></i>
-                {% else %}
-                  <i class="fas fa-exclamation-triangle"></i>
-                {% endif %}
-                <div>{{ message }}</div>
-              </div>
-            {% endfor %}
-          {% endif %}
-
-          {% if form.errors %}
-            <div class="alert alert-danger alert-modern">
-              <i class="fas fa-exclamation-triangle"></i>
-              <div>
-                <strong>Por favor corrige los siguientes errores:</strong>
-                <ul class="mb-0">
-                  {% for field, errors in form.errors.items %}
-                    {% for error in errors %}
-                      <li>{{ error }}</li>
-                    {% endfor %}
-                  {% endfor %}
-                </ul>
-              </div>
-            </div>
-          {% endif %}
-
-          <form method="POST" class="register-form" id="registerForm">
-            {% csrf_token %}
-
-            <div class="form-section">
-              <h3 class="section-title">
-                <i class="fas fa-user"></i>
-                Información Personal
-              </h3>
-              
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <div class="form-group-modern">
-                    <label for="{{ form.nombre_completo.id_for_label }}" class="form-label-modern">
-                      <i class="fas fa-user"></i>
-                      {{ form.nombre_completo.label }}
-                    </label>
-                    {{ form.nombre_completo }}
-                    {% if form.nombre_completo.errors %}
-                      <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ form.nombre_completo.errors.0 }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <div class="col-md-12 mb-3">
-                  <div class="form-group-modern">
-                    <label for="{{ form.email.id_for_label }}" class="form-label-modern">
-                      <i class="fas fa-envelope"></i>
-                      {{ form.email.label }}
-                    </label>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                      <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ form.email.errors.0 }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-section">
-              <h3 class="section-title">
-                <i class="fas fa-lock"></i>
-                Seguridad
-              </h3>
-              
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <div class="form-group-modern">
-                    <label for="{{ form.password.id_for_label }}" class="form-label-modern">
-                      <i class="fas fa-key"></i>
-                      {{ form.password.label }}
-                    </label>
-                    <div class="password-input-wrapper">
-                      {{ form.password }}
-                      <button type="button" class="toggle-password" onclick="togglePassword('id_password')">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                    </div>
-                    {% if form.password.errors %}
-                      <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ form.password.errors.0 }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <div class="form-group-modern">
-                    <label for="{{ form.password2.id_for_label }}" class="form-label-modern">
-                      <i class="fas fa-key"></i>
-                      {{ form.password2.label }}
-                    </label>
-                    <div class="password-input-wrapper">
-                      {{ form.password2 }}
-                      <button type="button" class="toggle-password" onclick="togglePassword('id_password2')">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                    </div>
-                    {% if form.password2.errors %}
-                      <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ form.password2.errors.0 }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-section">
-              <h3 class="section-title">
-                <i class="fas fa-globe"></i>
-                Información Adicional
-              </h3>
-              
-              <div class="row">
-                <div class="col-md-12 mb-3">
-                  <div class="form-group-modern">
-                    <label class="form-label-modern">
-                      <i class="fas fa-flag"></i>
-                      {{ form.pais.label }}
-                    </label>
-                    <div class="country-selector">
-                      {% for choice in form.pais %}
-                        <label class="country-option" for="{{ choice.id_for_label }}">
-                          {{ choice.tag }}
-                          <span class="country-name">{{ choice.choice_label }}</span>
-                          <i class="fas fa-check check-icon"></i>
-                        </label>
-                      {% endfor %}
-                    </div>
-                    {% if form.pais.errors %}
-                      <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ form.pais.errors.0 }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <div class="form-group-modern">
-                    <label for="{{ form.identificador_tributario.id_for_label }}" class="form-label-modern">
-                      <i class="fas fa-id-card"></i>
-                      {{ form.identificador_tributario.label }}
-                    </label>
-                    {{ form.identificador_tributario }}
-                    {% if form.identificador_tributario.errors %}
-                      <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ form.identificador_tributario.errors.0 }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                  <div class="form-group-modern">
-                    <label for="{{ form.fecha_nacimiento.id_for_label }}" class="form-label-modern">
-                      <i class="fas fa-calendar"></i>
-                      {{ form.fecha_nacimiento.label }}
-                    </label>
-                    {{ form.fecha_nacimiento }}
-                    <small class="form-help">
-                      <i class="fas fa-info-circle"></i>
-                      Debes ser mayor de 18 años
-                    </small>
-                    {% if form.fecha_nacimiento.errors %}
-                      <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ form.fecha_nacimiento.errors.0 }}
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn-register-submit">
-                <span>Crear Cuenta</span>
-                <i class="fas fa-arrow-right"></i>
-              </button>
-              
-              <p class="login-link">
-                ¿Ya tienes una cuenta? 
-                <a href="{% url 'login' %}">Inicia sesión aquí</a>
-              </p>
-            </div>
-          </form>
-        </div>
+  <div class="register-body">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="{{ form.nombre_completo.id_for_label }}">
+          <i class="fas fa-user"></i> Nombre Completo
+        </label>
+        {{ form.nombre_completo }}
       </div>
-    </div>
+
+      <div class="form-group">
+        <label for="{{ form.email.id_for_label }}">
+          <i class="fas fa-envelope"></i> Correo Electrónico
+        </label>
+        {{ form.email }}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password.id_for_label }}">
+          <i class="fas fa-lock"></i> Contraseña
+        </label>
+        {{ form.password }}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password2.id_for_label }}">
+          <i class="fas fa-lock"></i> Confirmar Contraseña
+        </label>
+        {{ form.password2 }}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.pais.id_for_label }}">
+          <i class="fas fa-globe"></i> País
+        </label>
+        {{ form.pais }}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.identificador_tributario.id_for_label }}">
+          <i class="fas fa-id-card"></i> Identificador Tributario
+        </label>
+        {{ form.identificador_tributario }}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.fecha_nacimiento.id_for_label }}">
+          <i class="fas fa-calendar"></i> Fecha de Nacimiento
+        </label>
+        {{ form.fecha_nacimiento }}
+      </div>
+
+      <button type="submit" class="btn-register">
+        <i class="fas fa-user-plus"></i> Crear Cuenta
+      </button>
+
+      <div class="login-link">
+        ¿Ya tienes cuenta?
+        <a href="{% url 'login' %}">Inicia sesión</a>
+      </div>
+    </form>
   </div>
 </div>
-
-<script>
-function togglePassword(inputId) {
-  const input = document.getElementById(inputId);
-  const button = event.currentTarget;
-  const icon = button.querySelector('i');
-  
-  if (input.type === 'password') {
-    input.type = 'text';
-    icon.classList.remove('fa-eye');
-    icon.classList.add('fa-eye-slash');
-  } else {
-    input.type = 'password';
-    icon.classList.remove('fa-eye-slash');
-    icon.classList.add('fa-eye');
-  }
-}
-
-// Animación al enviar formulario
-document.getElementById('registerForm').addEventListener('submit', function() {
-  const submitBtn = this.querySelector('.btn-register-submit');
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando cuenta...';
-  submitBtn.disabled = true;
-});
-</script>
 {% endblock %}

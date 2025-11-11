@@ -7,15 +7,7 @@ from .models import Clasificacion
 PAISES_CHOICES = [
     ('chile', 'Chile'),
     ('colombia', 'Colombia'),
-    ('peru', 'Perú'),
-    ('argentina', 'Argentina'),
-    ('mexico', 'México'),
-    ('brasil', 'Brasil'),
-    ('ecuador', 'Ecuador'),
-    ('venezuela', 'Venezuela'),
-    ('uruguay', 'Uruguay'),
-    ('paraguay', 'Paraguay'),
-    ('bolivia', 'Bolivia'),
+    ('peru', 'Perú')
 ]
 
 class RegistroNUAMForm(forms.Form):
