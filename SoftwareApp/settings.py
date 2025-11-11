@@ -79,28 +79,26 @@ WSGI_APPLICATION = 'SoftwareApp.wsgi.application'
 import dj_database_url
 import os
 
-# 1. Obtenemos la URL completa que Railway nos proporciona
+# 1. Obtener la URL de Railway (que ya sabemos que es correcta si se carga)
 DATABASE_URL_VALUE = os.environ.get('MYSQL_URL')
 
 DATABASES = {
     'default': {}
 }
 
-# 2. Si la URL existe, la parseamos con dj-database-url
+# 2. Intentar cargar y parsear la URL
 if DATABASE_URL_VALUE:
     DATABASES['default'] = dj_database_url.config(
         default=DATABASE_URL_VALUE
     )
     
-    # 3. Forzamos el uso del ENGINE de MySQL y el CONN_MAX_AGE
-    # Esto soluciona los errores previos de ImproperlyConfigured y TypeError.
-    DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
-    DATABASES['default']['CONN_MAX_AGE'] = 600
-
-    # 4. (Opcional) Ajuste para MySQL que puede ser útil
-    DATABASES['default']['OPTIONS'] = {
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-    }
+# 3. GARANTIZAR EL MOTOR Y LOS EXTRAS (Esta es la línea clave que debe estar presente siempre)
+# El 'ENGINE' debe estar fuera de dj_database_url.config() pero debe ser asignado.
+DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
+DATABASES['default']['CONN_MAX_AGE'] = 600
+DATABASES['default']['OPTIONS'] = {
+    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+}
 
 
 
