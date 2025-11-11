@@ -1,0 +1,44 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_title %}
+    Eliminar Dato Tributario
+{% endblock %}
+
+{% block dashboard_page_title %}
+    Eliminar Dato Tributario
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Confirmar Eliminación</h5>
+            </div>
+            <div class="card-body">
+                <p class="alert alert-warning">
+                    <strong>¡Advertencia!</strong> Estás a punto de eliminar el dato tributario:
+                </p>
+                
+                <div class="mb-3">
+                    <p><strong>Nombre:</strong> {{ dato.nombre_dato }}</p>
+                    <p><strong>Clasificación:</strong> {{ dato.clasificacion.nombre }}</p>
+                    <p><strong>Monto:</strong> $ {{ dato.monto|floatformat:2|default:"-" }}</p>
+                    <p><strong>Factor:</strong> {{ dato.factor|floatformat:4|default:"-" }}</p>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'listar_datos_tributarios' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-danger">Sí, Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

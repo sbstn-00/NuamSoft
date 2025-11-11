@@ -1,0 +1,217 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_title %}
+    Carga Masiva de Datos
+{% endblock %}
+
+{% block dashboard_page_title %}
+    Carga Masiva de Datos
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-lg-10 offset-lg-1">
+        <!-- Botón para descargar plantilla -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1"><i class="fas fa-download me-2"></i>¿Necesitas una plantilla?</h6>
+                        <p class="text-muted mb-0 small">Descarga un archivo Excel de ejemplo con el formato correcto</p>
+                    </div>
+                    <a href="{% url 'descargar_plantilla' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-file-excel me-2"></i>Descargar Plantilla
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de carga -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Cargar Archivo de Datos Tributarios</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Sube tu archivo .csv o .xlsx. El sistema detectará automáticamente las columnas.
+                    Asegúrate de que tenga una columna con el nombre del dato (obligatorio).
+                </p>
+                
+                <form method="POST" enctype="multipart/form-data" id="formCarga">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <p><strong><i class="fas fa-exclamation-triangle me-2"></i>Por favor corrige los siguientes errores:</strong></p>
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.clasificacion.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-folder me-2"></i>{{ form.clasificacion.label }}
+                            </label>
+                            {{ form.clasificacion }}
+                            {% if form.clasificacion.errors %}
+                                <div class="text-danger small">{{ form.clasificacion.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.clasificacion.help_text }}</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-cog me-2"></i>{{ form.modo_carga.label }}
+                            </label>
+                            <div class="mt-2">
+                                {% for choice in form.modo_carga %}
+                                    <div class="form-check">
+                                        {{ choice.tag }}
+                                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                            {{ choice.choice_label }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.modo_carga.errors %}
+                                <div class="text-danger small">{{ form.modo_carga.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.modo_carga.help_text }}</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.archivo_masivo.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-file-excel me-2"></i>{{ form.archivo_masivo.label }}
+                        </label>
+                        <div class="input-group">
+                            {{ form.archivo_masivo }}
+                        </div>
+                        {% if form.archivo_masivo.errors %}
+                            <div class="text-danger small mt-1">{{ form.archivo_masivo.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            {{ form.archivo_masivo.help_text }}
+                        </small>
+                        <div class="progress mt-2" id="progressBar" style="display: none;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+                            <i class="fas fa-upload me-2"></i>
+                            Procesar y Cargar Datos
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Estadísticas -->
+        {% if total_datos > 0 %}
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Estadísticas</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Total de datos cargados:</strong> {{ total_datos }}</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="{% url 'listar_datos_tributarios' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>Ver Todos los Datos
+                        </a>
+                    </div>
+                </div>
+                {% if ultimas_cargas %}
+                <hr>
+                <h6>Últimas cargas:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Clasificación</th>
+                                <th>Monto</th>
+                                <th>Fecha de Creación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dato in ultimas_cargas %}
+                            <tr>
+                                <td>{{ dato.nombre_dato|truncatewords:3 }}</td>
+                                <td><span class="badge bg-info">{{ dato.clasificacion.nombre }}</span></td>
+                                <td>$ {{ dato.monto|floatformat:2|default:"-" }}</td>
+                                <td>{{ dato.creado_en|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Instrucciones y ayuda -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Instrucciones</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li><strong>Columna Nombre:</strong> Obligatoria. Puede llamarse "Nombre", "Name", "Descripción", etc.</li>
+                            <li><strong>Columna Monto:</strong> Opcional. Puede llamarse "Monto", "Amount", "Valor", etc.</li>
+                            <li><strong>Columna Factor:</strong> Opcional. Puede llamarse "Factor", "Multiplicador", etc.</li>
+                            <li><strong>Columna Fecha:</strong> Opcional. Puede llamarse "Fecha", "Date", etc.</li>
+                            <li><strong>Tamaño máximo:</strong> 10MB</li>
+                            <li><strong>Formato:</strong> La primera fila debe ser el encabezado con los nombres de las columnas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Consejos</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li>El sistema detecta automáticamente las columnas</li>
+                            <li>Los nombres de columnas pueden estar en español o inglés</li>
+                            <li>Las fechas pueden estar en cualquier formato estándar</li>
+                            <li>Usa el modo "Actualizar" para modificar datos existentes</li>
+                            <li>Descarga la plantilla para ver el formato correcto</li>
+                            <li>Si hay errores, verifica que el archivo tenga datos en las filas</li>
+                            <li>Elimina filas vacías antes de cargar el archivo</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mostrar barra de progreso al enviar formulario
+document.getElementById('formCarga').addEventListener('submit', function() {
+    document.getElementById('progressBar').style.display = 'block';
+    document.getElementById('btnSubmit').disabled = true;
+    document.getElementById('btnSubmit').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+});
+</script>
+{% endblock %}

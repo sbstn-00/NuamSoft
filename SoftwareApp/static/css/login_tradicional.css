@@ -1,0 +1,12 @@
+
+body {
+    background-color: #FF6B35; 
+}
+
+
+.form-personalizado {
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}

@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Sesión - PROTON{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'css/login_tradicional.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-background">
+    <div class="login-shapes">
+      <div class="login-shape login-shape-1"></div>
+      <div class="login-shape login-shape-2"></div>
+      <div class="login-shape login-shape-3"></div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-lg-5 col-md-7">
+        <div class="login-card">
+          <div class="login-card-header">
+            <a href="{% url 'antepagina' %}" class="login-back-button">
+              <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="login-logo">
+              <div class="login-logo-icon">
+                <i class="fas fa-sign-in-alt"></i>
+              </div>
+              <h1>Iniciar Sesión</h1>
+              <p>Bienvenido de vuelta a PROTON</p>
+            </div>
+          </div>
+          
+          {% if messages %}
+            {% for message in messages %}
+              <div class="login-alert {% if message.tags == 'success' %}login-alert-success{% endif %}">
+                {% if message.tags == 'success' %}
+                  <i class="fas fa-check-circle"></i>
+                  <div>
+                    <strong>Éxito</strong>
+                    <p>{{ message }}</p>
+                  </div>
+                {% else %}
+                  <i class="fas fa-exclamation-circle"></i>
+                  <div>
+                    <strong>Error de autenticación</strong>
+                    <p>{{ message }}</p>
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {% if form.errors %}
+            <div class="login-alert">
+              <i class="fas fa-exclamation-circle"></i>
+              <div>
+                <strong>Error de autenticación</strong>
+                <p>Tu nombre de usuario o contraseña no son correctos.</p>
+              </div>
+            </div>
+          {% endif %}
+
+          <form method="POST" class="login-form" id="loginForm">
+            {% csrf_token %}
+            
+            {% if request.GET.next %}
+              <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+
+            <div class="login-form-group">
+              <label for="id_username" class="login-label">
+                <i class="fas fa-envelope"></i>
+                Email
+              </label>
+              <div class="login-input-wrapper">
+                <input 
+                  type="text" 
+                  name="username" 
+                  class="login-input" 
+                  id="id_username" 
+                  placeholder="tu@email.com" 
+                  required
+                  autocomplete="username"
+                >
+                <i class="fas fa-envelope login-input-icon"></i>
+              </div>
+              <small class="login-help">
+                <i class="fas fa-info-circle"></i>
+                Usa el mismo email con el que te registraste
+              </small>
+            </div>
+            
+            <div class="login-form-group">
+              <label for="id_password" class="login-label">
+                <i class="fas fa-lock"></i>
+                Contraseña
+              </label>
+              <div class="login-input-wrapper">
+                <input 
+                  type="password" 
+                  name="password" 
+                  class="login-input" 
+                  id="id_password" 
+                  placeholder="Ingresa tu contraseña" 
+                  required
+                  autocomplete="current-password"
+                >
+                <button type="button" class="login-toggle-password" onclick="toggleLoginPassword()">
+                  <i class="fas fa-eye" id="toggleIcon"></i>
+                </button>
+              </div>
+            </div>
+            
+            <button type="submit" class="login-submit-btn">
+              <span>Iniciar Sesión</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </form>
+          
+          <div class="login-footer">
+            <p class="login-register-link">
+              ¿No tienes una cuenta? 
+              <a href="{% url 'registro' %}">Regístrate aquí</a>
+            </p>
+            <a href="{% url 'antepagina' %}" class="login-home-link">
+              <i class="fas fa-home"></i>
+              Volver al inicio
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleLoginPassword() {
+  const input = document.getElementById('id_password');
+  const icon = document.getElementById('toggleIcon');
+  
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+}
+
+// Animación al enviar formulario
+document.getElementById('loginForm').addEventListener('submit', function() {
+  const submitBtn = this.querySelector('.login-submit-btn');
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando sesión...';
+  submitBtn.disabled = true;
+});
+</script>
+{% endblock %}
