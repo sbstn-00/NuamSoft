@@ -1,6 +1,6 @@
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'css/dashboard-futuristic.css' %}">
+<link rel="stylesheet" href="{% static 'css/inicio.css' %}">
 
 <div class="sidebar">
   <div class="profile">
@@ -10,10 +10,10 @@
   </div>
 
   <ul class="nav">
-    <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Principal</a></li>
-    <li><a href="{% url 'crear_clasificacion' %}"><i class="fas fa-layer-group"></i> Crear Clasificación</a></li>
+    <li><a href="{% url 'inicio' %}"><i class="fas fa-home"></i> Principal</a></li>
+    <li><a href="{% url 'clasificacion' %}"><i class="fas fa-layer-group"></i> Crear Clasificación</a></li>
     <li><a href="{% url 'carga_datos' %}"><i class="fas fa-upload"></i> Carga de Datos</a></li>
-    <li><a href="{% url 'reportes' %}"><i class="fas fa-chart-line"></i> Reportes</a></li>
+    <li><a href="{% url '' %}"><i class="fas fa-chart-line"></i> Reportes</a></li>
   </ul>
 </div>
 
