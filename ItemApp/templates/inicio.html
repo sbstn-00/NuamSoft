@@ -6,38 +6,112 @@
 {% endblock %}
 
 {% block dashboard_page_title %}
-    Panel Principal
+    Panel de Control Inteligente
 {% endblock %}
 
 {% block dashboard_content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card glass-card p-4 text-center">
-                <i class="fas fa-database fa-2x mb-3 text-primary"></i>
-                <h5>Carga de Datos</h5>
-                <p>Sube y valida archivos Excel con información tributaria.</p>
-                <a href="{% url 'carga_datos' %}" class="btn btn-primary">Ir</a>
+
+        <!-- Tarjetas de estadísticas principales -->
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <h5>Usuarios Activos</h5>
+                <p class="stat-number">128</p>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card glass-card p-4 text-center">
-                <i class="fas fa-tasks fa-2x mb-3 text-success"></i>
-                <h5>Clasificación</h5>
-                <p>Administra las categorías de tus registros con facilidad.</p>
-                <a href="{% url 'crear_clasificacion' %}" class="btn btn-success">Ir</a>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <i class="fas fa-database"></i>
+                <h5>Datos Cargados</h5>
+                <p class="stat-number">2.4K</p>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card glass-card p-4 text-center">
-                <i class="fas fa-chart-line fa-2x mb-3 text-warning"></i>
-                <h5>Reportes</h5>
-                <p>Consulta métricas clave y genera reportes automáticos.</p>
-                <a href="#" class="btn btn-warning">Ver</a>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <i class="fas fa-bug"></i>
+                <h5>Errores Detectados</h5>
+                <p class="stat-number text-danger">14</p>
             </div>
         </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <i class="fas fa-clock"></i>
+                <h5>Tareas Pendientes</h5>
+                <p class="stat-number text-warning">5</p>
+            </div>
+        </div>
+
+        <!-- Sección de métricas visuales -->
+        <div class="col-lg-8">
+            <div class="card glass-card p-4">
+                <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i> Rendimiento Semanal</h5>
+                <canvas id="chartRendimiento"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card glass-card p-4">
+                <h5 class="mb-3"><i class="fas fa-bell me-2"></i> Notificaciones</h5>
+                <ul class="notifications">
+                    <li><i class="fas fa-check-circle text-success"></i> Carga de datos completada.</li>
+                    <li><i class="fas fa-exclamation-triangle text-warning"></i> 2 archivos pendientes de validación.</li>
+                    <li><i class="fas fa-user-plus text-info"></i> Nuevo usuario registrado: <strong>analista02</strong>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Accesos rápidos -->
+        <div class="col-12 mt-4">
+            <div class="quick-access d-flex flex-wrap justify-content-center gap-3">
+                <a href="{% url 'crear_clasificacion' %}" class="btn-glass">
+                    <i class="fas fa-tags"></i> Clasificaciones
+                </a>
+                <a href="{% url 'carga_datos' %}" class="btn-glass">
+                    <i class="fas fa-upload"></i> Carga de Datos
+                </a>
+                <a href="{% url 'listar_datos_tributarios' %}" class="btn-glass">
+                    <i class="fas fa-table"></i> Datos Tributarios
+                </a>
+                <a href="#" class="btn-glass">
+                    <i class="fas fa-chart-bar"></i> Reportes
+                </a>
+            </div>
+        </div>
+
     </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('chartRendimiento').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        datasets: [{
+            label: 'Rendimiento',
+            data: [12, 19, 15, 22, 30, 25, 28],
+            borderColor: '#9ecbff',
+            backgroundColor: 'rgba(158, 203, 255, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3
+        }]
+    },
+    options: {
+        scales: {
+            x: { ticks: { color: '#bbb' } },
+            y: { ticks: { color: '#bbb' } }
+        },
+        plugins: { legend: { labels: { color: '#ccc' } } }
+    }
+});
+</script>
 {% endblock %}
