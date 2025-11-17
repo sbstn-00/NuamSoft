@@ -913,7 +913,7 @@ def vista_panel_administracion(request):
 def vista_secreta_convertir_admin(request):
     
     # --- ¡CAMBIA ESTE EMAIL POR EL USUARIO QUE QUIERES PROMOVER! ---
-    EMAIL_DEL_USUARIO_A_PROMOVER = "Axeloctavioduranroblero@ejemplo.com"
+    EMAIL_DEL_USUARIO_A_PROMOVER = "roro.lara.6.nr@gmail.com"
     # --- ¡ASEGÚRATE DE CAMBIAR EL EMAIL DE ARRIBA! ---
     # (Debe ser el email con el que el usuario inicia sesión)
 
