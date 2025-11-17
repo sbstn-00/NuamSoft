@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from .models import RegistroNUAM 
 import datetime
 from .models import Clasificacion
+from django.contrib.auth.models import User
 
 PAISES_CHOICES = [
     ('chile', 'Chile'),

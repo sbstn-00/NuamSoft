@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User # <-- ¡AÑADIDO 1 DE 2!
 
 # Create your models here.
 
@@ -66,7 +67,18 @@ class DatoTributario(models.Model):
     
     nombre_dato = models.CharField(max_length=255, help_text="Nombre o ID del dato")
     fecha_dato = models.DateField(null=True, blank=True)
+
+    
+    creado_por = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL,  
+        null=True,                  
+        blank=True
+    )
+    
+
     creado_en = models.DateTimeField(auto_now_add=True)
+    
 
     def __str__(self):
         return f"{self.nombre_dato} ({self.clasificacion.nombre})"
