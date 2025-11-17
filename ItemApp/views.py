@@ -12,6 +12,8 @@ import io
 import json
 from datetime import datetime, timedelta
 from django.utils import timezone
+# --- ¡AÑADIDO! ---
+from django.contrib.auth.decorators import user_passes_test 
 
 from .forms import RegistroNUAMForm, ClasificacionForm, CargaMasivaForm
 from .models import RegistroNUAM, Clasificacion, DatoTributario
@@ -95,6 +97,14 @@ def vista_logout(request):
     messages.info(request, 'Has cerrado sesión correctamente.')
     return redirect('antepagina')
 
+# --- FUNCIÓN DE AYUDA PARA ROLES ---
+def es_staff(user):
+    """Verifica si el usuario es staff"""
+    return user.is_authenticated and user.is_staff
+
+# --- VISTAS DE CLASIFICACIÓN AHORA PROTEGIDAS ---
+
+@user_passes_test(es_staff) # <-- ¡AÑADIDO!
 @login_required
 def vista_gestion_clasificacion(request):
     if request.method == 'POST':
@@ -118,6 +128,7 @@ def vista_gestion_clasificacion(request):
     }
     return render(request, 'clasificacion.html', context)
 
+@user_passes_test(es_staff) # <-- ¡AÑADIDO!
 @login_required
 def vista_eliminar_clasificacion(request, pk):
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
@@ -129,6 +140,7 @@ def vista_eliminar_clasificacion(request, pk):
     context = {'clasificacion': clasificacion}
     return render(request, 'eliminar_clasificacion.html', context)
 
+@user_passes_test(es_staff) # <-- ¡AÑADIDO!
 @login_required
 def vista_editar_clasificacion(request, pk):
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
@@ -142,6 +154,8 @@ def vista_editar_clasificacion(request, pk):
         form = ClasificacionForm(instance=clasificacion)
     context = {'form': form, 'clasificacion': clasificacion}
     return render(request, 'editar_clasificacion.html', context)
+
+# --- FIN DE VISTAS PROTEGIDAS ---
 
 
 def leer_archivo_excel(archivo):
@@ -579,25 +593,23 @@ def vista_carga_datos(request):
                                 dato_existente.save()
                                 registros_actualizados += 1
                             else:
-                                # ¡MODIFICACIÓN 1 AQUÍ!
                                 DatoTributario.objects.create(
                                     clasificacion=clasificacion_seleccionada,
                                     nombre_dato=datos['nombre_dato'],
                                     monto=datos.get('monto'),
                                     factor=datos.get('factor'),
                                     fecha_dato=datos.get('fecha_dato'),
-                                    creado_por=request.user  # <-- AÑADIDO
+                                    creado_por=request.user
                                 )
                                 registros_creados += 1
                         else:
-                            # ¡MODIFICACIÓN 2 AQUÍ!
                             DatoTributario.objects.create(
                                 clasificacion=clasificacion_seleccionada,
                                 nombre_dato=datos['nombre_dato'],
                                 monto=datos.get('monto'),
                                 factor=datos.get('factor'),
                                 fecha_dato=datos.get('fecha_dato'),
-                                creado_por=request.user  # <-- AÑADIDO
+                                creado_por=request.user
                             )
                             registros_creados += 1
                         
@@ -801,10 +813,12 @@ def vista_eliminar_dato_tributario(request, pk):
     return render(request, 'eliminar_dato_tributario.html', context)
 
 
-from django.contrib.auth.decorators import user_passes_test
+# ¡Esta importación ya estaba aquí! La moveré al inicio por orden.
+# from django.contrib.auth.decorators import user_passes_test
 
-def es_staff(user):
-    return user.is_authenticated and user.is_staff
+# ¡Esta función ya estaba aquí!
+# def es_staff(user):
+#     return user.is_authenticated and user.is_staff
 
 @login_required
 def vista_panel_administracion(request):
