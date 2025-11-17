@@ -112,6 +112,32 @@
   .login-link a:hover {
     text-decoration: underline;
   }
+
+  /* --- INICIO ESTILOS DE ERROR --- */
+  .alerta-error-general {
+    background-color: #f8d7da;
+    border: 1.5px solid #f5c2c7;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.2rem;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  .alerta-error-general p {
+      margin: 0;
+  }
+
+  .alerta-error-campo {
+    color: #721c24;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 0.4rem;
+    padding-left: 0.5rem;
+  }
+  /* --- FIN ESTILOS DE ERROR --- */
+
 </style>
 {% endblock %}
 
@@ -125,11 +151,26 @@
   <div class="register-body">
     <form method="POST">
       {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alerta-error-general">
+          {% for error in form.non_field_errors %}
+            <p><i class="fas fa-exclamation-triangle"></i> {{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
       <div class="form-group">
         <label for="{{ form.nombre_completo.id_for_label }}">
           <i class="fas fa-user"></i> Nombre Completo
         </label>
         {{ form.nombre_completo }}
+        {% if form.nombre_completo.errors %}
+            <div class="alerta-error-campo">
+                {% for error in form.nombre_completo.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
       </div>
 
       <div class="form-group">
@@ -137,6 +178,13 @@
           <i class="fas fa-envelope"></i> Correo Electrónico
         </label>
         {{ form.email }}
+        {% if form.email.errors %}
+            <div class="alerta-error-campo">
+                {% for error in form.email.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
       </div>
 
       <div class="form-group">
@@ -144,6 +192,13 @@
           <i class="fas fa-lock"></i> Contraseña
         </label>
         {{ form.password }}
+        {% if form.password.errors %}
+            <div class="alerta-error-campo">
+                {% for error in form.password.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
       </div>
 
       <div class="form-group">
@@ -151,7 +206,15 @@
           <i class="fas fa-lock"></i> Confirmar Contraseña
         </label>
         {{ form.password2 }}
+        {% if form.password2.errors %}
+            <div class="alerta-error-campo">
+                {% for error in form.password2.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
       </div>
+      
       <div class="form-group mb-3">
         <label class="form-label d-block fw-semibold mb-2">
           <i class="fas fa-globe"></i> País
@@ -170,14 +233,27 @@
                 <span> Colombia</span>
             </label>
         </div>
+        {% if form.pais.errors %}
+            <div class="alerta-error-campo">
+                {% for error in form.pais.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
       </div>
-
 
       <div class="form-group">
         <label for="{{ form.identificador_tributario.id_for_label }}">
           <i class="fas fa-id-card"></i> Identificador Tributario
         </label>
         {{ form.identificador_tributario }}
+        {% if form.identificador_tributario.errors %}
+            <div class="alerta-error-campo">
+                {% for error in form.identificador_tributario.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
       </div>
 
       <div class="form-group">
@@ -185,6 +261,13 @@
           <i class="fas fa-calendar"></i> Fecha de Nacimiento
         </label>
         {{ form.fecha_nacimiento }}
+        {% if form.fecha_nacimiento.errors %}
+            <div class="alerta-error-campo">
+                {% for error in form.fecha_nacimiento.errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
       </div>
 
       <button type="submit" class="btn-register">
