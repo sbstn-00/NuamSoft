@@ -53,7 +53,7 @@
                                             <a href="{% url 'editar_clasificacion' item.pk %}" class="btn btn-sm btn-outline-warning" title="Editar">
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
-                                            <a href="{% url 'eliminar_clasificacion' item.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <a href="{% url 'eliminar_clasificacion' item.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar esta clasificación?');">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </a>
                                         {% else %}
@@ -66,8 +66,13 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="alert alert-light text-center">
-                        <p class="mb-0">Aún no se han creado clasificaciones.</p>
+                    <div class="text-center p-4">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <h5 class="mb-3">No hay clasificaciones</h5>
+                        <p class="text-muted">Aún no has creado ninguna clasificación. ¡Empieza ahora!</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrear">
+                            <i class="fas fa-plus me-1"></i> Crear la primera
+                        </button>
                     </div>
                 {% endif %}
 
@@ -78,8 +83,8 @@
 
 <div class="modal fade" id="modalCrear" tabindex="-1" aria-labelledby="modalCrearLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-light">
                 <h5 class="modal-title" id="modalCrearLabel">Crear Nueva Clasificación</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -98,7 +103,7 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <label for="{{ form.nombre.id_for_label }}" class="form-label fw-bold">Nombre:</label>
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label fw-bold">Nombre de la clasificación:</label>
                         {{ form.nombre }} {% if form.nombre.errors %}
                             <div class="text-danger mt-1">
                                 {% for error in form.nombre.errors %}
@@ -110,7 +115,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Clasificación</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Guardar Clasificación</button>
                 </div>
             </form>
 
