@@ -108,13 +108,9 @@ def vista_gestion_clasificacion(request):
     if request.method == 'POST':
         form = ClasificacionForm(request.POST)
         if form.is_valid():
-            # ==============================================
-            # ¡CAMBIO AQUÍ! Guardamos al dueño
-            # ==============================================
             clasificacion = form.save(commit=False)
             clasificacion.creado_por = request.user
             clasificacion.save()
-            # ==============================================
             
             messages.success(request, 'Clasificación creada exitosamente.')
             return redirect('crear_clasificacion')
@@ -137,13 +133,9 @@ def vista_gestion_clasificacion(request):
 def vista_eliminar_clasificacion(request, pk):
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
     
-    # ==============================================
-    # ¡CAMBIO AQUÍ! Nueva regla de permisos
-    # ==============================================
     if not request.user.is_staff and clasificacion.creado_por != request.user:
         messages.error(request, 'No tienes permiso para eliminar esta clasificación.')
         return redirect('crear_clasificacion')
-    # ==============================================
 
     if request.method == 'POST':
         nombre = clasificacion.nombre
@@ -158,13 +150,9 @@ def vista_eliminar_clasificacion(request, pk):
 def vista_editar_clasificacion(request, pk):
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
 
-    # ==============================================
-    # ¡CAMBIO AQUÍ! Nueva regla de permisos
-    # ==============================================
     if not request.user.is_staff and clasificacion.creado_por != request.user:
         messages.error(request, 'No tienes permiso para editar esta clasificación.')
         return redirect('crear_clasificacion')
-    # ==============================================
 
     if request.method == 'POST':
         form = ClasificacionForm(request.POST, instance=clasificacion)
@@ -498,7 +486,6 @@ def validar_fila_datos(fila, columnas_detectadas, index):
 @login_required
 def vista_carga_datos(request):
     # ... (tu código de vista_carga_datos no cambia, ya estaba bien) ...
-    # ... (ya incluye creado_por=request.user) ...
     clasificaciones_existentes = Clasificacion.objects.all()
     if not clasificaciones_existentes.exists():
         messages.warning(request, 
@@ -832,17 +819,56 @@ def vista_listar_datos_tributarios(request):
     
     return render(request, 'listar_datos_tributarios.html', context)
 
+# ==============================================
+# ¡CAMBIO FINAL AQUÍ!
+# Nueva lógica de permisos para borrar Datos Tributarios
+# ==============================================
 @login_required
 def vista_eliminar_dato_tributario(request, pk):
-    # ... (Modificaremos esta vista después para cumplir tus otras reglas) ...
     dato = get_object_or_404(DatoTributario, pk=pk)
+    
+    # Por defecto, el usuario no puede borrar
+    puede_borrar = False
+    
+    # 1. ¿Es Admin? Si es admin, puede borrar cualquier cosa.
+    if request.user.is_staff:
+        puede_borrar = True
+        
+    # 2. Si NO es Admin, verificamos si es el dueño Y si es reciente
+    elif dato.creado_por == request.user:
+        # Definimos "reciente" como 10 minutos
+        tiempo_limite = timezone.now() - timedelta(minutes=10)
+        
+        # Comprobamos si el dato fue creado DESPUÉS del tiempo límite
+        # (es decir, dentro de los últimos 10 minutos)
+        if dato.creado_en > tiempo_limite:
+            puede_borrar = True
+        else:
+            # Es el dueño, pero ya pasó el tiempo
+            messages.error(request, 'No puedes eliminar este dato. Solo tienes 10 minutos de gracia para corregir errores.')
+    
+    else:
+        # No es admin y no es el dueño
+        messages.error(request, 'No tienes permiso para eliminar este dato.')
+
+    # --- Fin de la lógica de permisos ---
+
+    if not puede_borrar:
+        # Si ninguna regla le dio permiso, lo redirigimos
+        return redirect('listar_datos_tributarios')
+
+    # Si llegó hasta aquí, TIENE PERMISO.
     if request.method == 'POST':
         nombre = dato.nombre_dato
         dato.delete()
         messages.success(request, f'Dato "{nombre}" eliminado exitosamente.')
         return redirect('listar_datos_tributarios')
+        
     context = {'dato': dato}
     return render(request, 'eliminar_dato_tributario.html', context)
+# ==============================================
+# FIN DEL CAMBIO
+# ==============================================
 
 
 @login_required
