@@ -17,18 +17,14 @@ from .forms import RegistroNUAMForm, ClasificacionForm, CargaMasivaForm
 from .models import RegistroNUAM, Clasificacion, DatoTributario
 
 
-
 def vista_registro(request):
     if request.method == 'POST':
-        
         form = RegistroNUAMForm(request.POST)
         
         if form.is_valid():
-            
             data = form.cleaned_data
             
             try:
-               
                 user = User.objects.create_user(
                     username=data['email'],
                     email=data['email'],
@@ -37,7 +33,6 @@ def vista_registro(request):
                 user.first_name = data['nombre_completo']
                 user.save()
 
-                
                 RegistroNUAM.objects.create(
                     nombre_completo=data['nombre_completo'],
                     email=data['email'],
@@ -46,24 +41,16 @@ def vista_registro(request):
                     fecha_nacimiento=data['fecha_nacimiento']
                 )
                 
-                
                 messages.success(request, '¡Registro exitoso! Ahora puedes iniciar sesión.')
                 return redirect('login')
             
             except Exception as e:
-                
                 messages.error(request, f"Ha ocurrido un error: {e}")
                 form.add_error(None, f"Ha ocurrido un error inesperado: {e}")
-
     else:
-        
         form = RegistroNUAMForm()
 
-    
-   
     return render(request, 'login.html', {'form': form}) 
-
-
 
 
 def vista_antepagina(request):
@@ -71,11 +58,9 @@ def vista_antepagina(request):
 
 @login_required
 def vista_inicio_logueado(request):
-    
     total_usuarios = User.objects.count()
     total_clasificaciones = Clasificacion.objects.count()
     total_datos = DatoTributario.objects.count()
-    
     
     stats_datos = DatoTributario.objects.aggregate(
         monto_total=Sum('monto'),
@@ -86,9 +71,7 @@ def vista_inicio_logueado(request):
     monto_total = stats_datos['monto_total'] or 0
     monto_promedio = stats_datos['monto_promedio'] or 0
     
-    
     datos_recientes = DatoTributario.objects.select_related('clasificacion').order_by('-creado_en')[:10]
-    
     
     stats_clasificacion = Clasificacion.objects.annotate(
         total_datos=Count('datos'),
@@ -112,10 +95,8 @@ def vista_logout(request):
     messages.info(request, 'Has cerrado sesión correctamente.')
     return redirect('antepagina')
 
-
 @login_required
 def vista_gestion_clasificacion(request):
-  
     if request.method == 'POST':
         form = ClasificacionForm(request.POST)
         if form.is_valid():
@@ -125,15 +106,12 @@ def vista_gestion_clasificacion(request):
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
-        
         form = ClasificacionForm()
 
-    
     clasificaciones_existentes = Clasificacion.objects.annotate(
         total_datos=Count('datos')
     ).order_by('-creado_en')
 
-   
     context = {
         'form': form,
         'clasificaciones': clasificaciones_existentes
@@ -167,18 +145,16 @@ def vista_editar_clasificacion(request, pk):
 
 
 def leer_archivo_excel(archivo):
-    """Lee un archivo Excel o CSV y retorna un DataFrame"""
     nombre = archivo.name.lower()
     try:
         if nombre.endswith('.csv'):
-            
             encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252', 'windows-1252']
             delimiters = [',', ';', '\t']
             
             for encoding in encodings:
                 for delimiter in delimiters:
                     try:
-                        archivo.seek(0)  
+                        archivo.seek(0)
                         df = pd.read_csv(
                             archivo, 
                             encoding=encoding,
@@ -190,28 +166,20 @@ def leer_archivo_excel(archivo):
                             skip_blank_lines=True
                         )
                         
-                       
                         if len(df.columns) == 0:
                             continue
                         
-                        
-                        df = df.dropna(how='all')  
-                        
-                        
+                        df = df.dropna(how='all')
                         df = df.loc[:, ~df.columns.str.contains('^Unnamed|^Unnamed:', case=False, na=False)]
-                        df = df.dropna(axis=1, how='all')  
+                        df = df.dropna(axis=1, how='all')
                         
-                       
                         if not df.empty and len(df.columns) > 0:
-                           
                             if len(df) > 0:
                                 return df
                     except (UnicodeDecodeError, pd.errors.EmptyDataError) as e:
                         continue
                     except Exception as e:
-                       
                         continue
-            
             
             archivo.seek(0)
             try:
@@ -232,20 +200,17 @@ def leer_archivo_excel(archivo):
             
         elif nombre.endswith(('.xls', '.xlsx')):
             archivo.seek(0)
-            
             try:
                 if nombre.endswith('.xlsx'):
-                    
                     df = pd.read_excel(
                         archivo, 
                         engine='openpyxl',
-                        sheet_name=0,  
+                        sheet_name=0,
                         na_values=['', ' ', 'N/A', 'n/a', 'NULL', 'null', 'NaN', '#N/A'],
                         keep_default_na=True,
-                        header=0  
+                        header=0
                     )
                 else:
-                   
                     try:
                         df = pd.read_excel(
                             archivo, 
@@ -255,7 +220,6 @@ def leer_archivo_excel(archivo):
                             header=0
                         )
                     except Exception:
-                        
                         archivo.seek(0)
                         df = pd.read_excel(
                             archivo, 
@@ -265,7 +229,6 @@ def leer_archivo_excel(archivo):
                             header=0
                         )
             except Exception as e:
-               
                 try:
                     archivo.seek(0)
                     df = pd.read_excel(
@@ -277,20 +240,13 @@ def leer_archivo_excel(archivo):
                 except Exception as e2:
                     raise ValueError(f"No se pudo leer el archivo Excel. Error: {str(e2)}. Verifique que el archivo no esté dañado.")
             
-          
             if len(df.columns) == 0:
                 raise ValueError("El archivo Excel no contiene columnas. Verifique que la primera fila tenga nombres de columnas.")
             
-            
             df = df.dropna(how='all')
-            
-           
             df = df.loc[:, ~df.columns.astype(str).str.contains('^Unnamed|^Unnamed:', case=False, na=False)]
-            
-          
             df = df.dropna(axis=1, how='all')
             
-           
             if len(df.columns) == 0:
                 raise ValueError("Después de limpiar el archivo, no quedan columnas válidas. Verifique el formato del archivo.")
             
@@ -304,44 +260,35 @@ def leer_archivo_excel(archivo):
 
 
 def detectar_columnas(df):
-    """Detecta automáticamente las columnas del archivo"""
-    
     if df.empty:
         raise ValueError("El archivo no contiene datos. Verifique que el archivo tenga filas de datos además del encabezado.")
-    
     
     if len(df.columns) == 0:
         raise ValueError("El archivo no contiene columnas. Verifique el formato del archivo.")
     
-    
     columnas_reales = [str(col) for col in df.columns.tolist()]
     columnas_actuales = columnas_reales.copy()
     
-    
     mapeo_columnas = {
         'nombre': ['nombre', 'name', 'nombre_dato', 'descripcion', 'descripción', 'desc', 'dato', 'item', 
-                  'concepto', 'detalle', 'descrip', 'titulo', 'title', 'concept', 'detail'],
+                   'concepto', 'detalle', 'descrip', 'titulo', 'title', 'concept', 'detail'],
         'monto': ['monto', 'amount', 'valor', 'value', 'precio', 'price', 'importe', 'cantidad', 
-                 'total', 'suma', 'capital', 'dinero', 'money', 'val', 'mnt'],
+                  'total', 'suma', 'capital', 'dinero', 'money', 'val', 'mnt'],
         'factor': ['factor', 'factor_', 'multiplicador', 'multiplier', 'ratio', 'coeficiente', 
-                  'coef', 'multi', 'porcentaje', 'percent', 'fac', 'rat'],
+                   'coef', 'multi', 'porcentaje', 'percent', 'fac', 'rat'],
         'fecha': ['fecha', 'date', 'fecha_dato', 'fecha_creacion', 'created_at', 'fecha_registro',
-                 'fecha_ingreso', 'fecha_carga', 'fech', 'fecha_', 'date_', 'fec']
+                  'fecha_ingreso', 'fecha_carga', 'fech', 'fecha_', 'date_', 'fec']
     }
     
     columnas_detectadas = {}
     columnas_no_detectadas = []
     
-   
     def normalizar_para_comparar(texto):
-        """Normaliza un texto para comparación"""
         if not texto:
             return ""
         texto = str(texto).lower().strip()
-       
         texto = texto.replace(' ', '').replace('-', '').replace('_', '').replace('.', '')
         return texto
-    
     
     for tipo, posibles_nombres in mapeo_columnas.items():
         encontrada = None
@@ -351,16 +298,13 @@ def detectar_columnas(df):
         for col_real in columnas_reales:
             col_normalizada = normalizar_para_comparar(col_real)
             
-           
             for nombre in posibles_nombres:
                 nombre_normalizado = normalizar_para_comparar(nombre)
-                
                 
                 if nombre_normalizado == col_normalizada:
                     encontrada = col_real
                     mejor_score = 100
                     break
-                
                 
                 if nombre_normalizado and col_normalizada:
                     if nombre_normalizado in col_normalizada:
@@ -369,7 +313,6 @@ def detectar_columnas(df):
                             mejor_score = score
                             mejor_coincidencia = col_real
                     
-                    
                     elif col_normalizada in nombre_normalizado and len(col_normalizada) > 3:
                         score = (len(col_normalizada) / len(nombre_normalizado)) * 80
                         if score > mejor_score:
@@ -377,7 +320,6 @@ def detectar_columnas(df):
                             mejor_coincidencia = col_real
         
         if encontrada:
-            
             if encontrada in df.columns:
                 idx = list(df.columns).index(encontrada)
                 columnas_detectadas[tipo] = {
@@ -386,23 +328,20 @@ def detectar_columnas(df):
                     'indice': idx
                 }
         elif mejor_coincidencia and mejor_score > 40:
-            
             if mejor_coincidencia in df.columns:
                 idx = list(df.columns).index(mejor_coincidencia)
                 columnas_detectadas[tipo] = {
-                    'nombre_original': mejor_coincidencia,  
+                    'nombre_original': mejor_coincidencia,
                     'nombre_normalizado': normalizar_para_comparar(mejor_coincidencia),
                     'indice': idx
                 }
         else:
-            if tipo == 'nombre':  
+            if tipo == 'nombre':
                 columnas_no_detectadas.append(tipo)
-    
     
     for tipo in list(columnas_detectadas.keys()):
         nombre_col = columnas_detectadas[tipo]['nombre_original']
         if nombre_col not in df.columns:
-            
             encontrada = None
             for col in df.columns:
                 if str(col).strip().lower() == nombre_col.strip().lower():
@@ -410,7 +349,6 @@ def detectar_columnas(df):
                     columnas_detectadas[tipo]['nombre_original'] = encontrada
                     break
             if not encontrada:
-                
                 del columnas_detectadas[tipo]
                 if tipo == 'nombre':
                     columnas_no_detectadas.append(tipo)
@@ -419,31 +357,24 @@ def detectar_columnas(df):
 
 
 def validar_fila_datos(fila, columnas_detectadas, index):
-    """Valida una fila de datos y retorna los datos procesados y errores"""
     errores = []
     datos = {}
     
-    
     def obtener_valor_columna(nombre_col):
-        """Obtiene el valor de una columna de la fila"""
         if nombre_col in fila.index:
             return fila[nombre_col]
-        
         for col in fila.index:
             if str(col).strip().lower() == nombre_col.strip().lower():
                 return fila[col]
         return None
     
-   
     if 'nombre' in columnas_detectadas:
         nombre_col_original = columnas_detectadas['nombre']['nombre_original']
         try:
             nombre_valor = obtener_valor_columna(nombre_col_original)
             
-            
             if nombre_valor is not None and pd.notna(nombre_valor):
                 nombre = str(nombre_valor).strip()
-               
                 if nombre and nombre.lower() not in ['nan', 'none', 'null', 'nat', 'n/a', 'na', '', ' ']:
                     datos['nombre_dato'] = nombre
                 else:
@@ -455,14 +386,12 @@ def validar_fila_datos(fila, columnas_detectadas, index):
     else:
         errores.append(f"Fila {index + 2}: No se encontró columna de nombre")
     
- 
     if 'monto' in columnas_detectadas:
         monto_col_original = columnas_detectadas['monto']['nombre_original']
         try:
             monto_valor = obtener_valor_columna(monto_col_original)
             
             if monto_valor is not None and pd.notna(monto_valor):
-                
                 if isinstance(monto_valor, (int, float)):
                     datos['monto'] = float(monto_valor)
                 else:
@@ -476,7 +405,6 @@ def validar_fila_datos(fila, columnas_detectadas, index):
         except Exception as e:
             datos['monto'] = None
     
-   
     if 'factor' in columnas_detectadas:
         factor_col_original = columnas_detectadas['factor']['nombre_original']
         try:
@@ -496,16 +424,13 @@ def validar_fila_datos(fila, columnas_detectadas, index):
         except Exception as e:
             datos['factor'] = None
     
-    
     if 'fecha' in columnas_detectadas:
         fecha_col_original = columnas_detectadas['fecha']['nombre_original']
         try:
             fecha_valor = obtener_valor_columna(fecha_col_original)
             
             if fecha_valor is not None and pd.notna(fecha_valor):
-                
                 try:
-                    
                     if isinstance(fecha_valor, pd.Timestamp):
                         datos['fecha_dato'] = fecha_valor.date()
                     else:
@@ -530,10 +455,8 @@ def validar_fila_datos(fila, columnas_detectadas, index):
     return datos, errores
 
 
-
 @login_required
 def vista_carga_datos(request):
-    
     clasificaciones_existentes = Clasificacion.objects.all()
     if not clasificaciones_existentes.exists():
         messages.warning(request, 
@@ -549,36 +472,30 @@ def vista_carga_datos(request):
             modo_carga = form.cleaned_data.get('modo_carga', 'crear')
 
             try:
-                
                 df = leer_archivo_excel(archivo)
                 
-               
                 if df.empty:
                     messages.error(request, 
                         'El archivo está vacío o no contiene datos. '
                         'Asegúrese de que el archivo tenga al menos una fila de datos además del encabezado.')
                     return render(request, 'carga_datos.html', {'form': form})
                 
-               
                 if len(df.columns) == 0:
                     messages.error(request, 
                         'El archivo no contiene columnas válidas. '
                         'Verifique que el archivo tenga nombres de columnas en la primera fila.')
                     return render(request, 'carga_datos.html', {'form': form})
                 
-                
                 df.columns = df.columns.astype(str).str.strip()
                 df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan$', case=False, na=False)]
                 df = df.dropna(axis=1, how='all')
-                df = df.dropna(how='all')  
-                
+                df = df.dropna(how='all')
                 
                 try:
                     columnas_detectadas, columnas_no_detectadas, columnas_originales = detectar_columnas(df.copy())
                 except ValueError as ve:
                     messages.error(request, str(ve))
                     return render(request, 'carga_datos.html', {'form': form})
-                
                 
                 if 'nombre' in columnas_no_detectadas:
                     mensaje_error = (
@@ -595,14 +512,12 @@ def vista_carga_datos(request):
                     messages.error(request, mensaje_error)
                     return render(request, 'carga_datos.html', {'form': form})
                 
-                
                 if len(df) == 0:
                     messages.error(request, 
                         'El archivo no contiene filas de datos. '
                         'Asegúrese de que el archivo tenga datos además del encabezado de columnas.')
                     return render(request, 'carga_datos.html', {'form': form})
 
-               
                 for tipo, info in columnas_detectadas.items():
                     nombre_col = info['nombre_original']
                     if nombre_col not in df.columns:
@@ -611,7 +526,6 @@ def vista_carga_datos(request):
                             f'Columnas disponibles: {", ".join(df.columns.tolist()[:10])}')
                         return render(request, 'carga_datos.html', {'form': form})
                 
-                
                 print("=" * 60)
                 print(f"PROCESAMIENTO DE ARCHIVO: {archivo.name}")
                 print(f"Total de filas: {len(df)}")
@@ -619,18 +533,15 @@ def vista_carga_datos(request):
                 print(f"Columnas en DataFrame: {list(df.columns)}")
                 print(f"Columnas detectadas:")
                 for tipo, info in columnas_detectadas.items():
-                    print(f"  - {tipo}: '{info['nombre_original']}' (índice: {info['indice']})")
+                    print(f"   - {tipo}: '{info['nombre_original']}' (índice: {info['indice']})")
                 print("=" * 60)
-                
                 
                 registros_creados = 0
                 registros_actualizados = 0
                 errores = []
                 advertencias = []
                 
-               
                 df = df.reset_index(drop=True)
-                
                 
                 if len(df) == 0:
                     messages.error(request, 
@@ -638,7 +549,6 @@ def vista_carga_datos(request):
                         'Verifique que el archivo tenga datos en las filas.')
                     return render(request, 'carga_datos.html', {'form': form})
                 
-               
                 filas_procesadas = 0
                 for index, fila in df.iterrows():
                     filas_procesadas += 1
@@ -648,12 +558,11 @@ def vista_carga_datos(request):
                         if errores_fila:
                             errores.extend(errores_fila)
                             continue
-                      
+                        
                         if 'nombre_dato' not in datos or not datos['nombre_dato']:
                             errores.append(f"Fila {index + 2}: El nombre del dato está vacío")
                             continue
                         
-                       
                         if modo_carga == 'actualizar':
                             dato_existente = DatoTributario.objects.filter(
                                 nombre_dato=datos['nombre_dato'],
@@ -661,7 +570,6 @@ def vista_carga_datos(request):
                             ).first()
                             
                             if dato_existente:
-                             
                                 if 'monto' in datos:
                                     dato_existente.monto = datos['monto']
                                 if 'factor' in datos:
@@ -671,39 +579,41 @@ def vista_carga_datos(request):
                                 dato_existente.save()
                                 registros_actualizados += 1
                             else:
-                            
+                                # ¡MODIFICACIÓN 1 AQUÍ!
                                 DatoTributario.objects.create(
                                     clasificacion=clasificacion_seleccionada,
                                     nombre_dato=datos['nombre_dato'],
                                     monto=datos.get('monto'),
                                     factor=datos.get('factor'),
-                                    fecha_dato=datos.get('fecha_dato')
+                                    fecha_dato=datos.get('fecha_dato'),
+                                    creado_por=request.user  # <-- AÑADIDO
                                 )
                                 registros_creados += 1
                         else:
-                   
+                            # ¡MODIFICACIÓN 2 AQUÍ!
                             DatoTributario.objects.create(
                                 clasificacion=clasificacion_seleccionada,
                                 nombre_dato=datos['nombre_dato'],
                                 monto=datos.get('monto'),
                                 factor=datos.get('factor'),
-                                fecha_dato=datos.get('fecha_dato')
+                                fecha_dato=datos.get('fecha_dato'),
+                                creado_por=request.user  # <-- AÑADIDO
                             )
                             registros_creados += 1
-                            
+                        
                     except Exception as e:
                         error_msg = f"Fila {index + 2}: {str(e)}"
                         errores.append(error_msg)
                         print(f"ERROR en fila {index + 2}: {str(e)}")
                         import traceback
                         print(traceback.format_exc())
-               
+                
                 print("=" * 60)
                 print(f"RESUMEN DE CARGA:")
-                print(f"  - Filas procesadas: {filas_procesadas}")
-                print(f"  - Registros creados: {registros_creados}")
-                print(f"  - Registros actualizados: {registros_actualizados}")
-                print(f"  - Errores: {len(errores)}")
+                print(f"   - Filas procesadas: {filas_procesadas}")
+                print(f"   - Registros creados: {registros_creados}")
+                print(f"   - Registros actualizados: {registros_actualizados}")
+                print(f"   - Errores: {len(errores)}")
                 print("=" * 60)
                 
                 if registros_creados > 0:
@@ -715,14 +625,13 @@ def vista_carga_datos(request):
                         f'Se actualizaron {registros_actualizados} registro(s) existente(s).')
                 
                 if errores:
-                   
                     errores_mostrar = errores[:10]
                     mensaje_errores = f'Se encontraron {len(errores)} error(es). '
                     if len(errores) > 10:
                         mensaje_errores += f'Mostrando los primeros 10:'
                     messages.error(request, mensaje_errores)
                     for error in errores_mostrar:
-                        messages.error(request, f'  • {error}')
+                        messages.error(request, f'   • {error}')
                     
                     if len(errores) > 10:
                         messages.warning(request, 
@@ -732,7 +641,6 @@ def vista_carga_datos(request):
                 if advertencias:
                     for advertencia in advertencias[:5]:
                         messages.warning(request, advertencia)
-                
                 
                 if registros_creados == 0 and registros_actualizados == 0 and errores:
                     messages.error(request, 
@@ -763,7 +671,6 @@ def vista_carga_datos(request):
     else:
         form = CargaMasivaForm()
 
-    
     ultimas_cargas = DatoTributario.objects.select_related('clasificacion').order_by('-creado_en')[:5]
     total_datos = DatoTributario.objects.count()
     
@@ -776,9 +683,7 @@ def vista_carga_datos(request):
 
 @login_required
 def descargar_plantilla_excel(request):
-    """Genera y descarga un archivo Excel de plantilla de ejemplo"""
     try:
-       
         datos_ejemplo = {
             'Nombre': ['Ejemplo 1', 'Ejemplo 2', 'Ejemplo 3'],
             'Monto': [1000.50, 2500.75, 150.00],
@@ -787,17 +692,13 @@ def descargar_plantilla_excel(request):
         }
         df = pd.DataFrame(datos_ejemplo)
         
-      
         output = io.BytesIO()
         
-      
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Datos')
             
-           
             worksheet = writer.sheets['Datos']
             
-          
             try:
                 from openpyxl.utils import get_column_letter
                 for idx, col in enumerate(df.columns, 1):
@@ -808,12 +709,10 @@ def descargar_plantilla_excel(request):
                     col_letter = get_column_letter(idx)
                     worksheet.column_dimensions[col_letter].width = min(max_length, 50)
             except:
-                
                 pass
         
         output.seek(0)
         
-      
         response = HttpResponse(
             output.read(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -829,16 +728,13 @@ def descargar_plantilla_excel(request):
 
 @login_required
 def vista_preview_archivo(request):
-    """Vista para previsualizar el archivo antes de cargar (opcional, puede ser AJAX)"""
     if request.method == 'POST' and request.FILES.get('archivo'):
         archivo = request.FILES['archivo']
         try:
             df = leer_archivo_excel(archivo)
             
-          
             columnas_detectadas, columnas_no_detectadas, columnas_originales = detectar_columnas(df.copy())
             
-           
             preview_data = df.head(5).to_dict('records')
             
             return JsonResponse({
@@ -862,14 +758,11 @@ def vista_preview_archivo(request):
 
 @login_required
 def vista_listar_datos_tributarios(request):
-
     busqueda = request.GET.get('q', '')
     clasificacion_id = request.GET.get('clasificacion', '')
     
-  
     datos = DatoTributario.objects.select_related('clasificacion').all()
     
-
     if busqueda:
         datos = datos.filter(
             Q(nombre_dato__icontains=busqueda) |
@@ -879,15 +772,12 @@ def vista_listar_datos_tributarios(request):
     if clasificacion_id:
         datos = datos.filter(clasificacion_id=clasificacion_id)
     
-  
     datos = datos.order_by('-creado_en')
     
-   
-    paginator = Paginator(datos, 20) 
+    paginator = Paginator(datos, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-   
     clasificaciones = Clasificacion.objects.all()
     
     context = {
@@ -911,23 +801,18 @@ def vista_eliminar_dato_tributario(request, pk):
     return render(request, 'eliminar_dato_tributario.html', context)
 
 
-
 from django.contrib.auth.decorators import user_passes_test
 
 def es_staff(user):
-    """Verifica si el usuario es staff"""
     return user.is_authenticated and user.is_staff
 
 @login_required
 def vista_panel_administracion(request):
-    """Panel de administración completo solo para usuarios staff"""
     
- 
     if not request.user.is_staff:
         messages.error(request, 'No tienes permisos para acceder al panel de administración.')
         return redirect('inicio')
     
-  
     total_usuarios = User.objects.count()
     total_staff = User.objects.filter(is_staff=True).count()
     total_superusuarios = User.objects.filter(is_superuser=True).count()
@@ -943,39 +828,31 @@ def vista_panel_administracion(request):
         factor_promedio=Avg('factor')
     )
     
- 
     stats_paises = RegistroNUAM.objects.values('pais').annotate(
         total=Count('id')
     ).order_by('-total')[:10]
     
-   
     stats_clasificacion = Clasificacion.objects.annotate(
         total_datos=Count('datos'),
         monto_total=Sum('datos__monto')
     ).order_by('-total_datos')[:10]
     
- 
     usuarios_recientes = User.objects.order_by('-date_joined')[:10]
     
-   
     registros_recientes = RegistroNUAM.objects.select_related().order_by('-creado_en')[:10]
     
-  
     datos_recientes = DatoTributario.objects.select_related('clasificacion').order_by('-creado_en')[:10]
-  
+ 
     fecha_limite = timezone.now() - timedelta(days=30)
     usuarios_nuevos_30d = User.objects.filter(date_joined__gte=fecha_limite).count()
     datos_nuevos_30d = DatoTributario.objects.filter(creado_en__gte=fecha_limite).count()
     registros_nuevos_30d = RegistroNUAM.objects.filter(creado_en__gte=fecha_limite).count()
     
-
     usuarios_activos_30d = User.objects.filter(last_login__gte=fecha_limite).count()
     
-  
     total_usuarios_regulares = total_usuarios - total_staff
     
     context = {
-        
         'total_usuarios': total_usuarios,
         'total_staff': total_staff,
         'total_superusuarios': total_superusuarios,
@@ -984,23 +861,19 @@ def vista_panel_administracion(request):
         'total_clasificaciones': total_clasificaciones,
         'total_datos_tributarios': total_datos_tributarios,
         
-     
         'monto_total': stats_datos['monto_total'] or 0,
         'monto_promedio': stats_datos['monto_promedio'] or 0,
         'monto_maximo': stats_datos['monto_maximo'] or 0,
         'monto_minimo': stats_datos['monto_minimo'] or 0,
         'factor_promedio': stats_datos['factor_promedio'] or 0,
         
-        
         'stats_paises': stats_paises,
         'stats_clasificacion': stats_clasificacion,
         
-       
         'usuarios_recientes': usuarios_recientes,
         'registros_recientes': registros_recientes,
         'datos_recientes': datos_recientes,
         
-       
         'usuarios_nuevos_30d': usuarios_nuevos_30d,
         'datos_nuevos_30d': datos_nuevos_30d,
         'registros_nuevos_30d': registros_nuevos_30d,
