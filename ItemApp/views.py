@@ -12,7 +12,6 @@ import io
 import json
 from datetime import datetime, timedelta
 from django.utils import timezone
-# --- ¡AÑADIDO! ---
 from django.contrib.auth.decorators import user_passes_test 
 
 from .forms import RegistroNUAMForm, ClasificacionForm, CargaMasivaForm
@@ -102,15 +101,21 @@ def es_staff(user):
     """Verifica si el usuario es staff"""
     return user.is_authenticated and user.is_staff
 
-# --- VISTAS DE CLASIFICACIÓN AHORA PROTEGIDAS ---
+# --- VISTAS DE CLASIFICACIÓN CON NUEVOS PERMISOS ---
 
-@user_passes_test(es_staff) # <-- ¡AÑADIDO!
 @login_required
 def vista_gestion_clasificacion(request):
     if request.method == 'POST':
         form = ClasificacionForm(request.POST)
         if form.is_valid():
-            form.save()
+            # ==============================================
+            # ¡CAMBIO AQUÍ! Guardamos al dueño
+            # ==============================================
+            clasificacion = form.save(commit=False)
+            clasificacion.creado_por = request.user
+            clasificacion.save()
+            # ==============================================
+            
             messages.success(request, 'Clasificación creada exitosamente.')
             return redirect('crear_clasificacion')
         else:
@@ -128,22 +133,39 @@ def vista_gestion_clasificacion(request):
     }
     return render(request, 'clasificacion.html', context)
 
-@user_passes_test(es_staff) # <-- ¡AÑADIDO!
 @login_required
 def vista_eliminar_clasificacion(request, pk):
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
+    
+    # ==============================================
+    # ¡CAMBIO AQUÍ! Nueva regla de permisos
+    # ==============================================
+    if not request.user.is_staff and clasificacion.creado_por != request.user:
+        messages.error(request, 'No tienes permiso para eliminar esta clasificación.')
+        return redirect('crear_clasificacion')
+    # ==============================================
+
     if request.method == 'POST':
         nombre = clasificacion.nombre
         clasificacion.delete()
         messages.success(request, f'Clasificación "{nombre}" eliminada exitosamente.')
         return redirect('crear_clasificacion')
+    
     context = {'clasificacion': clasificacion}
     return render(request, 'eliminar_clasificacion.html', context)
 
-@user_passes_test(es_staff) # <-- ¡AÑADIDO!
 @login_required
 def vista_editar_clasificacion(request, pk):
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
+
+    # ==============================================
+    # ¡CAMBIO AQUÍ! Nueva regla de permisos
+    # ==============================================
+    if not request.user.is_staff and clasificacion.creado_por != request.user:
+        messages.error(request, 'No tienes permiso para editar esta clasificación.')
+        return redirect('crear_clasificacion')
+    # ==============================================
+
     if request.method == 'POST':
         form = ClasificacionForm(request.POST, instance=clasificacion)
         if form.is_valid():
@@ -152,13 +174,15 @@ def vista_editar_clasificacion(request, pk):
             return redirect('crear_clasificacion')
     else:
         form = ClasificacionForm(instance=clasificacion)
+    
     context = {'form': form, 'clasificacion': clasificacion}
     return render(request, 'editar_clasificacion.html', context)
 
-# --- FIN DE VISTAS PROTEGIDAS ---
+# --- FIN DE VISTAS DE CLASIFICACIÓN ---
 
 
 def leer_archivo_excel(archivo):
+    # ... (tu código de leer_archivo_excel no cambia) ...
     nombre = archivo.name.lower()
     try:
         if nombre.endswith('.csv'):
@@ -274,6 +298,7 @@ def leer_archivo_excel(archivo):
 
 
 def detectar_columnas(df):
+    # ... (tu código de detectar_columnas no cambia) ...
     if df.empty:
         raise ValueError("El archivo no contiene datos. Verifique que el archivo tenga filas de datos además del encabezado.")
     
@@ -371,6 +396,7 @@ def detectar_columnas(df):
 
 
 def validar_fila_datos(fila, columnas_detectadas, index):
+    # ... (tu código de validar_fila_datos no cambia) ...
     errores = []
     datos = {}
     
@@ -471,6 +497,8 @@ def validar_fila_datos(fila, columnas_detectadas, index):
 
 @login_required
 def vista_carga_datos(request):
+    # ... (tu código de vista_carga_datos no cambia, ya estaba bien) ...
+    # ... (ya incluye creado_por=request.user) ...
     clasificaciones_existentes = Clasificacion.objects.all()
     if not clasificaciones_existentes.exists():
         messages.warning(request, 
@@ -695,6 +723,7 @@ def vista_carga_datos(request):
 
 @login_required
 def descargar_plantilla_excel(request):
+    # ... (tu código de descargar_plantilla_excel no cambia) ...
     try:
         datos_ejemplo = {
             'Nombre': ['Ejemplo 1', 'Ejemplo 2', 'Ejemplo 3'],
@@ -740,6 +769,7 @@ def descargar_plantilla_excel(request):
 
 @login_required
 def vista_preview_archivo(request):
+    # ... (tu código de vista_preview_archivo no cambia) ...
     if request.method == 'POST' and request.FILES.get('archivo'):
         archivo = request.FILES['archivo']
         try:
@@ -770,6 +800,7 @@ def vista_preview_archivo(request):
 
 @login_required
 def vista_listar_datos_tributarios(request):
+    # ... (tu código de vista_listar_datos_tributarios no cambia) ...
     busqueda = request.GET.get('q', '')
     clasificacion_id = request.GET.get('clasificacion', '')
     
@@ -803,6 +834,7 @@ def vista_listar_datos_tributarios(request):
 
 @login_required
 def vista_eliminar_dato_tributario(request, pk):
+    # ... (Modificaremos esta vista después para cumplir tus otras reglas) ...
     dato = get_object_or_404(DatoTributario, pk=pk)
     if request.method == 'POST':
         nombre = dato.nombre_dato
@@ -812,13 +844,6 @@ def vista_eliminar_dato_tributario(request, pk):
     context = {'dato': dato}
     return render(request, 'eliminar_dato_tributario.html', context)
 
-
-# ¡Esta importación ya estaba aquí! La moveré al inicio por orden.
-# from django.contrib.auth.decorators import user_passes_test
-
-# ¡Esta función ya estaba aquí!
-# def es_staff(user):
-#     return user.is_authenticated and user.is_staff
 
 @login_required
 def vista_panel_administracion(request):

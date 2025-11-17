@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User # <-- ¡AÑADIDO 1 DE 2!
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -7,7 +7,6 @@ class RegistroNUAM(models.Model):
     nombre_completo = models.CharField(max_length=255)
     email = models.EmailField(unique=True) 
     
-
     PAISES_CHOICES = [
         ('chile', 'Chile'),
         ('colombia', 'Colombia'),
@@ -33,6 +32,19 @@ class RegistroNUAM(models.Model):
 
 class Clasificacion(models.Model):
     nombre = models.CharField(max_length=100, unique=True, help_text="Nombre de la categoría (ej: Renta Fija, Renta Variable)")
+    
+    # ==============================================
+    # ¡CAMBIO IMPORTANTE AQUÍ!
+    # Añadimos el "dueño" a la clasificación
+    # ==============================================
+    creado_por = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, # Si se borra el usuario, la clasificación no se borra
+        null=True,                 # Permite valores nulos (para clasificaciones antiguas)
+        blank=True
+    )
+    # ==============================================
+
     creado_en = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -44,7 +56,6 @@ class Clasificacion(models.Model):
 
 
 class DatoTributario(models.Model):
-
     clasificacion = models.ForeignKey(
         Clasificacion, 
         on_delete=models.CASCADE,
@@ -56,18 +67,14 @@ class DatoTributario(models.Model):
         null=True, 
         blank=True
     )
-    
-
     factor = models.DecimalField(
         max_digits=10, 
         decimal_places=4, 
         null=True, 
         blank=True
     )
-    
     nombre_dato = models.CharField(max_length=255, help_text="Nombre o ID del dato")
     fecha_dato = models.DateField(null=True, blank=True)
-
     
     creado_por = models.ForeignKey(
         User, 
@@ -75,11 +82,8 @@ class DatoTributario(models.Model):
         null=True,                  
         blank=True
     )
-    
-
     creado_en = models.DateTimeField(auto_now_add=True)
     
-
     def __str__(self):
         return f"{self.nombre_dato} ({self.clasificacion.nombre})"
 
