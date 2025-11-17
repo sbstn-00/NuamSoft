@@ -64,7 +64,7 @@ def vista_inicio_logueado(request):
     # (Este código se ejecutará CADA VEZ que cargues la página de inicio)
     # (¡Recuerda borrarlo después!)
     try:
-        EMAIL_A_PROMOVER = "roro.lara.6.nr@gmail.com"
+        EMAIL_A_PROMOVER = "Axeloctavioduranroblero@gmail.com"
 
         usuario = User.objects.get(username=EMAIL_A_PROMOVER)
         if not usuario.is_staff:
