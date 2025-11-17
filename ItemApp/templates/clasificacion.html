@@ -10,50 +10,36 @@
 {% endblock %}
 
 {% block dashboard_content %}
-<div class="row">
-    
-    <div class="col-lg-5 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Crear Nueva Calificación</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">Añade una nueva categoría para tus datos (ej: Renta Fija, Renta Variable).</p>
-                
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    {% if form.errors %}
-                        <div class="alert alert-danger">
-                            Por favor corrige los errores.
-                        </div>
-                    {% endif %}
-                    
-                    {{ form.as_p }}
-                    
-                    <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Clasificación</button>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-lg-7">
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
         <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Calificaciones Existentes</h5>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Clasificaciones Existentes</h5>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrear">
+                    <i class="fas fa-plus me-1"></i> Crear Nueva
+                </button>
             </div>
             <div class="card-body">
                 
                 {% if clasificaciones %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover align-middle">
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
                                     <th>Total de Datos</th>
-                                    <th>Fecha de Creación</th>
                                     <th>Creado por</th>
-                                    <th>Acciones</th>
+                                    <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -61,32 +47,74 @@
                                 <tr>
                                     <td><strong>{{ item.nombre }}</strong></td>
                                     <td><span class="badge bg-info">{{ item.total_datos }}</span></td>
-                                    <td>{{ item.creado_en|date:"d M Y" }}</td>
                                     <td>{{ item.creado_por.username|default:"Sistema" }}</td>
-                                    <td>
+                                    <td class="text-end">
                                         {% if user.is_staff or item.creado_por == user %}
-                                            <a href="{% url 'editar_clasificacion' item.pk %}" class="btn btn-sm btn-warning" title="Editar">
-                                                <i class="fas fa-edit"></i>
+                                            <a href="{% url 'editar_clasificacion' item.pk %}" class="btn btn-sm btn-outline-warning" title="Editar">
+                                                <i class="fas fa-edit"></i> Editar
                                             </a>
-                                            <a href="{% url 'eliminar_clasificacion' item.pk %}" class="btn btn-sm btn-danger" title="Eliminar">
-                                                <i class="fas fa-trash"></i>
+                                            <a href="{% url 'eliminar_clasificacion' item.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                                <i class="fas fa-trash"></i> Eliminar
                                             </a>
                                         {% else %}
-                                            <span class="text-muted" title="No tienes permisos"><i class="fas fa-lock"></i></span>
+                                            <span class="text-muted" title="No tienes permisos"><i class="fas fa-lock"></i> Solo el dueño puede editar</span>
                                         {% endif %}
-                                        </td>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 {% else %}
-                    <p class="text-center text-muted">Aún no se han creado clasificaciones.</p>
+                    <div class="alert alert-light text-center">
+                        <p class="mb-0">Aún no se han creado clasificaciones.</p>
+                    </div>
                 {% endif %}
 
             </div>
         </div>
     </div>
-
 </div> 
+
+<div class="modal fade" id="modalCrear" tabindex="-1" aria-labelledby="modalCrearLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCrearLabel">Crear Nueva Clasificación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-muted small">Añade una nueva categoría para tus datos (ej: Renta Fija, Renta Variable).</p>
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2">
+                            {% for error in form.non_field_errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label fw-bold">Nombre:</label>
+                        {{ form.nombre }} {% if form.nombre.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.nombre.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Clasificación</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
 {% endblock %}
