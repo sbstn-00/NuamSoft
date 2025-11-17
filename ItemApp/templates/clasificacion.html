@@ -52,6 +52,7 @@
                                     <th>Nombre</th>
                                     <th>Total de Datos</th>
                                     <th>Fecha de Creación</th>
+                                    <th>Creado por</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -61,14 +62,19 @@
                                     <td><strong>{{ item.nombre }}</strong></td>
                                     <td><span class="badge bg-info">{{ item.total_datos }}</span></td>
                                     <td>{{ item.creado_en|date:"d M Y" }}</td>
+                                    <td>{{ item.creado_por.username|default:"Sistema" }}</td>
                                     <td>
-                                        <a href="{% url 'editar_clasificacion' item.pk %}" class="btn btn-sm btn-warning" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{% url 'eliminar_clasificacion' item.pk %}" class="btn btn-sm btn-danger" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </td>
+                                        {% if user.is_staff or item.creado_por == user %}
+                                            <a href="{% url 'editar_clasificacion' item.pk %}" class="btn btn-sm btn-warning" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'eliminar_clasificacion' item.pk %}" class="btn btn-sm btn-danger" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted" title="No tienes permisos"><i class="fas fa-lock"></i></span>
+                                        {% endif %}
+                                        </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -82,4 +88,5 @@
         </div>
     </div>
 
-</div> {% endblock %}
+</div> 
+{% endblock %}

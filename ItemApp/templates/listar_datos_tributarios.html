@@ -20,7 +20,6 @@
                 </a>
             </div>
             <div class="card-body">
-                <!-- Filtros de búsqueda -->
                 <form method="GET" class="mb-4">
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -44,7 +43,6 @@
                     </div>
                 </form>
 
-                <!-- Tabla de datos -->
                 {% if page_obj %}
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -56,6 +54,7 @@
                                     <th>Factor</th>
                                     <th>Fecha</th>
                                     <th>Fecha de Creación</th>
+                                    <th>Creado por</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -68,18 +67,22 @@
                                     <td>{{ dato.factor|floatformat:4|default:"-" }}</td>
                                     <td>{{ dato.fecha_dato|date:"d/m/Y"|default:"-" }}</td>
                                     <td>{{ dato.creado_en|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ dato.creado_por.username|default:"Sistema" }}</td>
                                     <td>
-                                        <a href="{% url 'eliminar_dato_tributario' dato.pk %}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este dato?');">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </td>
+                                        {% if user.is_staff or dato.creado_por == user %}
+                                            <a href="{% url 'eliminar_dato_tributario' dato.pk %}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este dato?');">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted" title="No tienes permisos"><i class="fas fa-lock"></i></span>
+                                        {% endif %}
+                                        </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- Paginación -->
                     {% if page_obj.has_other_pages %}
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
@@ -126,5 +129,3 @@
     </div>
 </div>
 {% endblock %}
-
-
