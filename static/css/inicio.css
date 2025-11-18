@@ -17,48 +17,102 @@ body {
   color: var(--text-dark);
 }
 
-/* --- Sidebar --- */
-/* Sidebar cerrado */
+/* === SIDEBAR === */
 .sidebar {
-    position: fixed;
-    top: 0;
-    left: -250px; /* oculto */
-    width: 250px;
-    height: 100vh;
-    background: #1f2937;
-    color: white;
-    padding-top: 20px;
-    transition: left 0.3s ease;
-    z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: -250px; /* OCULTO */
+  width: 250px;
+  height: 100vh;
+  background: #1f2937;
+  color: white;
+  padding-top: 20px;
+  transition: var(--transition);
+  z-index: 9999;
 }
 
 /* Sidebar abierto */
 .sidebar.open {
-    left: 0;
+  left: 0;
 }
 
-/* El dashboard NUNCA se mueve */
-.dashboard-content {
-    position: relative;
-    z-index: 1;
+/* Perfil */
+.sidebar .profile {
+  text-align: center;
 }
 
-/* Botón hamburguesa */
+.sidebar .profile img {
+  width: 80px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.sidebar .profile h3 {
+  margin: 5px 0;
+}
+
+/* Navegación */
+.sidebar .nav {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar .nav li {
+  padding: 10px 25px;
+}
+
+.sidebar .nav li a {
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: var(--transition);
+}
+
+.sidebar .nav li a:hover {
+  background: var(--secondary-color);
+  border-radius: var(--radius);
+}
+
+/* === BOTÓN HAMBURGUESA === */
 .menu-btn {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 10000;
-    background: #ff6b35;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10000;
+  background: var(--main-color);
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
 }
 
-/* --- Main content --- */
+/* === OVERLAY === */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition);
+  z-index: 9998;
+}
 
+.overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* === DASHBOARD (YA NO SE MUEVE) === */
+.main-content {
+  padding: 30px;
+  transition: var(--transition);
+}
 
 .dashboard-header {
   display: flex;
@@ -70,6 +124,7 @@ body {
   color: var(--text-dark);
 }
 
+/* Widgets */
 .widget {
   background: var(--main-color);
   color: white;
@@ -79,31 +134,36 @@ body {
   text-align: center;
   transition: var(--transition);
 }
+
 .widget:hover {
   transform: translateY(-5px);
   background: var(--secondary-color);
 }
+
 .widget h3 {
   font-size: 1.2rem;
 }
+
 .widget p {
   font-size: 1.8rem;
   font-weight: bold;
 }
 
-/* --- Table cards --- */
+/* Cards */
 .card {
   border: none;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   background: white;
 }
+
 .card-header {
   background: var(--main-color);
   color: white;
   border-top-left-radius: var(--radius);
   border-top-right-radius: var(--radius);
 }
+
 .table-hover tbody tr:hover {
   background: #fff6ef;
 }
