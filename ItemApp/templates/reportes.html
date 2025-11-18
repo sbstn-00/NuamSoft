@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (reporteData.length === 0) return;
 
         const labels = reporteData.map(item => item.nombre);
-        const data = reporteData.map(item => item.monto_total);
+        const data = reporteData.map(item => parseFloat(item.monto_total));
 
         // Función para generar colores únicos
         const generateColors = (num) => {
