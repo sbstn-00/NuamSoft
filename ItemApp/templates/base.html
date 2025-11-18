@@ -27,6 +27,30 @@
       {% endfor %}
     </div>
   {% endif %}
+
+  <!-- Botón menú (hamburguesa) -->
+<button class="menu-btn" onclick="toggleMenu()">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="profile">
+        <img src="{% static 'img/perfil.png' %}" alt="Perfil">
+        <h3>{{ user.username }}</h3>
+    </div>
+
+    <ul class="nav">
+        <li><a href="{% url 'inicio' %}"><i class="fas fa-home"></i> Inicio</a></li>
+        <li><a href="{% url 'crear_clasificacion' %}"><i class="fas fa-tags"></i> Clasificación</a></li>
+        <li><a href="#"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+        <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+    </ul>
+</div>
+
+<!-- Overlay oscuro detrás del menú -->
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
   
   {% block content %}
   {% endblock %}
@@ -36,6 +60,15 @@
           crossorigin="anonymous"></script>
 
   {% block scripts %}
+  <script>
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    sidebar.classList.toggle("open");
+    overlay.classList.toggle("active");
+}
+</script>
   {% endblock %}
 </body>
 </html>
