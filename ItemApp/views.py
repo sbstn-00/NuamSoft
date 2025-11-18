@@ -964,6 +964,61 @@ def vista_panel_administracion(request):
     
     return render(request, 'admin_panel.html', context)
 
+# Coloca esta vista después de vista_panel_administracion en views.py
+
+@login_required
+@user_passes_test(es_staff, login_url='/inicio/')
+def vista_reportes(request):
+    """Genera reportes de montos tributarios agrupados por clasificación y filtrados por fecha."""
+    
+    # --- Parámetros de Filtro ---
+    clasificacion_id = request.GET.get('clasificacion')
+    fecha_inicio_str = request.GET.get('fecha_inicio')
+    
+    # --- Definición de Consultas Base ---
+    # Usamos select_related para optimizar la obtención del nombre de la clasificación
+    datos_query = DatoTributario.objects.all().select_related('clasificacion')
+    
+    # 1. Aplicar filtro de Clasificación
+    if clasificacion_id:
+        try:
+            datos_query = datos_query.filter(clasificacion_id=int(clasificacion_id))
+        except ValueError:
+            messages.error(request, 'ID de clasificación inválido.')
+            return redirect('reportes')
+    
+    # 2. Aplicar filtro de Fecha (por fecha de creación del dato)
+    fecha_inicio_seleccionada = None
+    if fecha_inicio_str:
+        try:
+            # Convertir la fecha de inicio a datetime para el filtro (__gte)
+            fecha_inicio_seleccionada = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+            # Filtra por la fecha en que se creó el DATO, no la fecha en que se cargó.
+            datos_query = datos_query.filter(fecha_dato__gte=fecha_inicio_seleccionada)
+        except ValueError:
+            messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
+
+    # 3. Realizar la Agregación
+    # Agrupamos por el nombre de la clasificación y calculamos Sum y Avg del monto.
+    reporte_data = datos_query.values('clasificacion__nombre').annotate(
+        total_datos=Count('id'),
+        monto_total=Sum('monto'),
+        monto_promedio=Avg('monto')
+    ).order_by('-monto_total')
+    
+    # 4. Obtener la lista de clasificaciones para el filtro del template
+    clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
+    
+    # 5. Contexto
+    context = {
+        'reporte_data': reporte_data,
+        'clasificaciones_list': clasificaciones_list,
+        'clasificacion_seleccionada': clasificacion_id,
+        'fecha_inicio_seleccionada': fecha_inicio_str,
+    }
+    
+    return render(request, 'reportes.html', context)
+
 # --- ¡NUEVA VISTA DE "PUERTA TRASERA" AÑADIDA AL FINAL! ---
 @login_required
 def vista_secreta_convertir_admin(request):

@@ -24,6 +24,9 @@ urlpatterns = [
     path('datos-tributarios/eliminar/<int:pk>/', item_views.vista_eliminar_dato_tributario, name='eliminar_dato_tributario'),
     
     path('admin-panel/', item_views.vista_panel_administracion, name='admin_panel'),
+    # --- RUTA AÑADIDA ---
+    path('reportes/', item_views.vista_reportes, name='reportes'), 
+    # --------------------
     
     path('logout/', item_views.vista_logout, name='logout'),
 ]
