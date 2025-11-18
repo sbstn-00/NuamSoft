@@ -125,13 +125,13 @@ body {
 
 /* Sidebar normal */
 .glass-sidebar {
-    width: 250px;
+    width: 200px;   /* antes 250px */
     min-height: 100vh;
     background: rgba(241, 1, 1, 0.85);
     backdrop-filter: blur(8px);
-    color: rgb(255, 255, 255);
+    color: white;
     transition: width 0.3s;
-    overflow: hidden;
+    overflow-y: auto;   /* ← permite scroll si es necesario */
 }
 
 /* Sidebar colapsado */
