@@ -202,3 +202,10 @@ body {
 .sidebar-nav .nav-link i {
     font-size: 1.1rem;
 }
+.card-header i {
+    opacity: 0.9;
+}
+
+.card-header {
+    color: #212529 !important;
+}
