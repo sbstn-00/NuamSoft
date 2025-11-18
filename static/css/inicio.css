@@ -58,10 +58,7 @@ body {
 }
 
 /* --- Main content --- */
-.main-content {
-  margin-left: 260px;
-  padding: 30px;
-}
+
 
 .dashboard-header {
   display: flex;
