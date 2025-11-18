@@ -131,7 +131,7 @@ body {
     backdrop-filter: blur(8px);
     color: rgb(255, 255, 255);
     transition: width 0.3s;
-    overflow: hidden;
+    overflow-y: auto;  
 }
 
 /* Sidebar colapsado */
@@ -196,8 +196,8 @@ body {
     font-size: 1.4rem;
 }
 .sidebar-nav .nav-link {
-    padding: 8px 15px;     /* antes era más grande */
-    font-size: 0.95rem;    /* ajusta tamaño del texto */
+    padding: 8px 15px;    
+    font-size: 0.95rem;    
 }
 .sidebar-nav .nav-link i {
     font-size: 1.1rem;
