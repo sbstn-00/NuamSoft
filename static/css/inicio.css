@@ -155,3 +155,43 @@ body {
 
 /* ----------- MAIN CONTENT ----------- */
 
+/* ----------- ARREGLAR ESPACIADO Y TAMAÑO DEL MENÚ ----------- */
+
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    font-size: 0.97rem;
+    color: white !important;
+    transition: var(--transition);
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.15rem;
+    width: 22px;
+    text-align: center;
+}
+
+.sidebar-nav .nav-link:hover,
+.sidebar-nav .nav-link.active {
+    background: var(--secondary-color);
+    border-radius: var(--radius);
+}
+
+/* Reducir separación entre enlaces */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Cuando está colapsado */
+.glass-sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.glass-sidebar.collapsed .nav-link i {
+    font-size: 1.4rem;
+}
