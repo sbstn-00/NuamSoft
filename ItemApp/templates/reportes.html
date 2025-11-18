@@ -118,8 +118,10 @@
     [
         {% for item in reporte_data %}
         {
-            "nombre": "{{ item.clasificacion__nombre }}",
-            "monto_total": {{ item.monto_total|default:0 }}
+            // Usamos escapejs para manejar comillas o caracteres especiales en el nombre
+            "nombre": "{{ item.clasificacion__nombre|escapejs }}",
+            // Aseguramos que sea un número flotante sin formato de moneda/coma
+            "monto_total": {{ item.monto_total|default:0|floatformat:2 }}
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ]
