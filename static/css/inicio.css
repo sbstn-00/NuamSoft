@@ -125,13 +125,13 @@ body {
 
 /* Sidebar normal */
 .glass-sidebar {
-    width: 200px;   /* antes 250px */
+    width: 250px;
     min-height: 100vh;
     background: rgba(241, 1, 1, 0.85);
     backdrop-filter: blur(8px);
-    color: white;
+    color: rgb(255, 255, 255);
     transition: width 0.3s;
-    overflow-y: auto;   /* ← permite scroll si es necesario */
+    overflow: hidden;
 }
 
 /* Sidebar colapsado */
@@ -194,4 +194,11 @@ body {
 
 .glass-sidebar.collapsed .nav-link i {
     font-size: 1.4rem;
+}
+.sidebar-nav .nav-link {
+    padding: 8px 15px;     /* antes era más grande */
+    font-size: 0.95rem;    /* ajusta tamaño del texto */
+}
+.sidebar-nav .nav-link i {
+    font-size: 1.1rem;
 }

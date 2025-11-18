@@ -41,7 +41,7 @@
             </a>
 
             <a href="{% url 'crear_clasificacion' %}" class="nav-link">
-                <i class="fas fa-layer-group"></i><span>Calicaciones</span>
+                <i class="fas fa-layer-group"></i><span>Calificaciones</span>
             </a>
             <a href="{% url 'carga_datos' %}" class="nav-link">
                 <i class="fas fa-cloud-upload-alt"></i><span>Carga de Datos</span>
@@ -69,7 +69,7 @@
         </div>
     </div>
 
-    <div class="main-content flex-grow-1 p-4" style="margin-left: 250px; transition: margin-left 0.3s;">
+    <div class="main-content flex-grow-1 p-4" style="margin-left: 200px; transition: margin-left 0.3s;">
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h4">{% block dashboard_page_title %}Panel{% endblock %}</h1>
@@ -94,7 +94,7 @@ toggleBtn.addEventListener("click", () => {
     mainContent.style.marginLeft = sidebar.classList.contains("collapsed") ? "80px" : "250px";
 
     const icon = toggleBtn.querySelector("i");
-    icon.classList.toggle("fa-angle-left");
+    icon.classList.toggle("fa-angle-left"); 
     icon.classList.toggle("fa-angle-right");
 });
 </script>
