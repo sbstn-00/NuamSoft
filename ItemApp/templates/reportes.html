@@ -137,17 +137,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const dataElement = document.getElementById('json-reporte-data');
         if (!dataElement) return;
 
-        const reporteData = JSON.parse(dataElement.textContent.trim());
+        // 1. Parsear los datos del JSON
+        const rawReporteData = JSON.parse(dataElement.textContent.trim());
 
-        if (reporteData.length === 0) return;
+        // 2. Limpiar y validar datos:
+        //    a) Filtrar elementos donde el monto_total no sea null o cero.
+        //    b) Convertir el monto_total a flotante para Chart.js.
+        const reporteData = rawReporteData
+            .map(item => ({
+                nombre: item.nombre,
+                // Aseguramos que sea un número flotante, usando 0 si la conversión falla
+                monto_total: parseFloat(item.monto_total) || 0
+            }))
+            .filter(item => item.monto_total > 0); // Solo mantener categorías con montos > 0
+
+
+        if (reporteData.length === 0) {
+            console.log("No hay datos válidos para generar el gráfico.");
+            return;
+        }
 
         const labels = reporteData.map(item => item.nombre);
-        const data = reporteData.map(item => parseFloat(item.monto_total));
+        const data = reporteData.map(item => item.monto_total);
 
-        // Función para generar colores únicos
+        // Función para generar colores únicos (sin cambios)
         const generateColors = (num) => {
             const colors = [];
-            // Usar un esquema de colores con buena separación para las barras
             const color_base = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1', '#f8f9fa'];
             for(let i = 0; i < num; i++) {
                 colors.push(color_base[i % color_base.length]);
@@ -159,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const ctx = document.getElementById('chartReporte').getContext('2d');
         new Chart(ctx, {
-            type: 'bar', // Gráfico de barras para comparación de montos
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
@@ -172,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // Permitir que la altura se ajuste a la configuración (height="70")
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -182,7 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         },
                         ticks: {
                             callback: function(value) {
-                                // Formato de moneda simple con separador de miles
                                 return '$' + value.toLocaleString('es-CL');
                             }
                         }
