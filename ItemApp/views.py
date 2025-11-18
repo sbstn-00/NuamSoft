@@ -964,16 +964,15 @@ def vista_panel_administracion(request):
     
     return render(request, 'admin_panel.html', context)
 
-# Coloca esta vista después de vista_panel_administracion en views.py
 
 @login_required
-@user_passes_test(es_staff, login_url='/inicio/')
 def vista_reportes(request):
     """Genera reportes de montos tributarios agrupados por clasificación y filtrados por fecha."""
     
-    # --- Parámetros de Filtro ---
+    
     clasificacion_id = request.GET.get('clasificacion')
     fecha_inicio_str = request.GET.get('fecha_inicio')
+   
     
     # --- Definición de Consultas Base ---
     # Usamos select_related para optimizar la obtención del nombre de la clasificación
