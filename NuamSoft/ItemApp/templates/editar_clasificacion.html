@@ -1,0 +1,64 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_title %}
+    Editar Clasificación
+{% endblock %}
+
+{% block dashboard_page_title %}
+    Editar Clasificación
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container py-4">
+    <div class="col-lg-8 offset-lg-2 fade-in">
+        <div class="card glass-card border-0 shadow-lg">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-0">
+                    <i class="fas fa-pen me-2 text-primary"></i> Editar Clasificación
+                </h5>
+                <span class="badge bg-info text-dark">ID #{{ clasificacion.id }}</span>
+            </div>
+
+            <div class="card-body">
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i> Corrige los errores antes de continuar.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-tag me-2 text-secondary"></i>{{ form.nombre.label }}
+                        </label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.nombre.errors|striptags }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3">
+                        <a href="{% url 'crear_clasificacion' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-save me-2"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+   
+        <div class="alert alert-info mt-4 shadow-sm fade-in" style="backdrop-filter: blur(5px); background: rgba(13,110,253,0.1); border: 1px solid rgba(255,255,255,0.1);">
+            <i class="fas fa-lightbulb me-2"></i> 
+            Puedes modificar el nombre de la clasificación y guardar los cambios. Asegúrate de que no existan duplicados.
+        </div>
+    </div>
+</div>
+{% endblock %}

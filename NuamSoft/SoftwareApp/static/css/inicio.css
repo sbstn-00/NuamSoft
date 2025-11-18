@@ -1,0 +1,218 @@
+/*
+  CSS para el Dashboard (inicio.html)
+*/
+
+/* Reset básico y fondo */
+body {
+    background-color: #f8f9fa; /* Fondo gris claro */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Contenedor principal (Sidebar + Contenido) */
+.page-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* ============================ */
+/* SIDEBAR           */
+/* ============================ */
+.sidebar {
+    width: 260px; /* Ancho del sidebar */
+    position: fixed; /* Fijo en la pantalla */
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #FF4444 0%, #FF6B35 100%); /* Gradiente Naranja */
+    color: white;
+    display: flex;
+    flex-direction: column; /* Organiza verticalmente */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+    padding: 20px 25px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+}
+
+.sidebar-profile {
+    padding: 25px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-avatar {
+    font-size: 5rem; /* Ícono de usuario grande */
+    line-height: 1;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.profile-name {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.profile-status {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+
+/* Navegación */
+.sidebar-nav {
+    flex-grow: 1; /* Ocupa el espacio sobrante */
+    padding-top: 20px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+    border-left: 4px solid #FFD700; /* Borde amarillo al pasar el mouse */
+    padding-left: 21px; /* Compensa el borde */
+}
+
+.nav-link.active {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: white;
+    font-weight: 600;
+}
+
+.nav-link i {
+    width: 20px; /* Ancho del ícono */
+    margin-right: 15px;
+    text-align: center;
+}
+
+/* Pie del sidebar (Logout) */
+.sidebar-footer {
+    padding: 20px 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-logout {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.btn-logout:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+}
+
+/* ============================ */
+/* CONTENIDO PRINCIPAL   */
+/* ============================ */
+.main-content {
+    /* Deja espacio para el sidebar */
+    margin-left: 260px; 
+    /* Ocupa el resto del ancho */
+    flex-grow: 1;
+    /* Permite scroll solo en esta área */
+    height: 100vh;
+    overflow-y: auto;
+    padding: 30px;
+}
+
+.main-header {
+    margin-bottom: 30px;
+}
+
+/* Tarjetas/Widgets */
+.widget-card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.widget-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.widget-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 992px) {
+    .sidebar {
+        position: relative; /* Deja de ser fijo */
+        width: 100%;
+        height: auto;
+        flex-direction: row; /* Se vuelve horizontal */
+        align-items: center;
+        overflow: hidden;
+    }
+    
+    .sidebar-header, .sidebar-profile, .sidebar-footer {
+        display: none; /* Ocultamos esto en móvil */
+    }
+
+    .sidebar-nav {
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+        padding-top: 0;
+    }
+
+    .nav-link {
+        padding: 15px 10px;
+    }
+    .nav-link:hover {
+        border-left: none;
+        padding-left: 10px;
+    }
+    .nav-link span {
+        display: none; /* Ocultamos el texto, dejamos solo íconos */
+    }
+    .nav-link i {
+        margin-right: 0;
+        font-size: 1.3rem;
+    }
+
+    .page-container {
+        flex-direction: column; /* Apilamos sidebar y contenido */
+    }
+
+    .main-content {
+        margin-left: 0; /* Ocupa todo el ancho */
+        height: auto;
+    }
+}

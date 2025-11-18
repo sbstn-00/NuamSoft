@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bienvenido a NUAM{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- Layout principal --- */
+.main-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* --- Sección izquierda --- */
+.left-panel {
+  width: 45%;
+  background-color: #E53935;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem;
+}
+
+.left-panel .branding {
+  margin-top: 3rem;
+}
+
+.left-panel h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.left-panel p {
+  font-size: 1rem;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+}
+
+.left-panel img {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 1rem;
+}
+
+.social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.social-icons a {
+  color: white;
+  font-size: 1.4rem;
+  transition: all 0.3s;
+}
+
+.social-icons a:hover {
+  transform: scale(1.1);
+  color: #ffd6c9;
+}
+
+/* --- Sección derecha --- */
+.right-panel {
+  width: 55%;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+.access-card {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.access-card h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.access-card p {
+  color: #555;
+  margin-bottom: 2rem;
+}
+
+.access-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.access-buttons a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-login {
+  background-color: #1976D2;
+  color: white;
+}
+
+.btn-login:hover {
+  background-color: #0d47a1;
+}
+
+.btn-register {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.btn-register:hover {
+  background-color: #e0e0e0;
+}
+
+.country-selector {
+  margin-top: 2rem;
+  text-align: left;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.country-selector label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.country-selector input {
+  margin-right: 0.5rem;
+}
+
+/* --- Responsivo --- */
+@media (max-width: 992px) {
+  .main-container {
+    flex-direction: column;
+  }
+  .left-panel, .right-panel {
+    width: 100%;
+    height: auto;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+  <!-- Panel Izquierdo -->
+  <div class="left-panel">
+    <div class="branding">
+      <h1>Bienvenido a NUAM</h1>
+      <p>Creando un Mercado Nuevo, Único, Abierto y Transformador</p>
+      <img src="{ % static 'img/InicioNuam.png' % } " alt="Imagen institucional de NUAM">
+      <p><strong>nuam</strong><br>Un nuevo mercado de capitales para América Latina</p>
+    </div>
+
+    <div class="social-icons">
+      <a href="#"><i class="fab fa-facebook-f"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+    </div>
+  </div>
+
+  <!-- Panel Derecho -->
+  <div class="right-panel">
+    <div class="access-card">
+      <h2>Accede a tu cuenta</h2>
+      <p>Selecciona una opción para continuar</p>
+
+      <div class="access-buttons">
+        <a href="{% url 'login' %}" class="btn-login">
+          <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+        </a>
+        <a href="{% url 'registro' %}" class="btn-register">
+          <i class="fas fa-user-plus"></i> Crear Cuenta
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

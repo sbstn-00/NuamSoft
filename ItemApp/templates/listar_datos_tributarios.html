@@ -27,7 +27,7 @@
                         </div>
                         <div class="col-md-4">
                             <select name="clasificacion" class="form-select">
-                                <option value="">Todas las clasificaciones</option>
+                                <option value="">Todas las calificaciones</option>
                                 {% for clas in clasificaciones %}
                                     <option value="{{ clas.id }}" {% if clasificacion_seleccionada == clas.id|stringformat:"s" %}selected{% endif %}>
                                         {{ clas.nombre }}
@@ -49,7 +49,7 @@
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
-                                    <th>Clasificación</th>
+                                    <th>Calificación</th>
                                     <th>Monto</th>
                                     <th>Factor</th>
                                     <th>Fecha</th>
