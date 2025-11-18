@@ -1,0 +1,42 @@
+/* Sidebar fijo */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background: #343a40;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 60px;
+    transition: transform 0.3s ease;
+}
+
+/* Oculto */
+.sidebar.closed {
+    transform: translateX(-250px);
+}
+
+/* Contenido principal */
+.main {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Cuando el menú está cerrado */
+.main.expanded {
+    margin-left: 0;
+}
+
+/* Botón */
+.toggle-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    font-size: 24px;
+    background: transparent;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    z-index: 1001;
+}
