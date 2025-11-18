@@ -18,50 +18,43 @@ body {
 }
 
 /* --- Sidebar --- */
+/* Sidebar cerrado */
 .sidebar {
-  width: 250px;
-  height: 100vh;
-  background: var(--main-color);
-  color: var(--text-light);
-  position: fixed;
-  top: 0;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: var(--shadow);
-  padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: -250px; /* oculto */
+    width: 250px;
+    height: 100vh;
+    background: #1f2937;
+    color: white;
+    padding-top: 20px;
+    transition: left 0.3s ease;
+    z-index: 9999;
 }
 
-.sidebar .profile {
-  text-align: center;
+/* Sidebar abierto */
+.sidebar.open {
+    left: 0;
 }
-.sidebar .profile img {
-  width: 80px;
-  border-radius: 50%;
-  margin-bottom: 10px;
+
+/* El dashboard NUNCA se mueve */
+.dashboard-content {
+    position: relative;
+    z-index: 1;
 }
-.sidebar .profile h3 {
-  margin: 5px 0;
-}
-.sidebar .nav {
-  list-style: none;
-  padding: 0;
-}
-.sidebar .nav li {
-  padding: 10px 25px;
-}
-.sidebar .nav li a {
-  color: white;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: var(--transition);
-}
-.sidebar .nav li a:hover {
-  background: var(--secondary-color);
-  border-radius: var(--radius);
+
+/* Botón hamburguesa */
+.menu-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10000;
+    background: #ff6b35;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
 }
 
 /* --- Main content --- */
