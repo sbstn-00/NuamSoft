@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-upload"></i> Carga Masiva de Calificaciones</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info small">
+                        <strong>Instrucciones:</strong><br>
+                        Suba un archivo Excel (.xlsx) que contenga las columnas: 
+                        <code>SEC_EVE</code>, <code>NEMO</code>, <code>FEC_PAGO</code> y los factores (ej: <code>F08</code>, <code>F09</code>...).
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="id_archivo_excel" class="form-label fw-bold">Seleccionar Archivo</label>
+                            {{ form.archivo_excel }}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'calificaciones_dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="fas fa-cloud-upload-alt me-2"></i> Procesar Archivo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

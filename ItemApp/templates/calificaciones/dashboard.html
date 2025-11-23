@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Calificaciones Tributarias</h5>
+            <div>
+                <a href="{% url 'carga_masiva_calificaciones' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-file-excel text-success"></i> Carga Masiva
+                </a>
+                <a href="{% url 'ingresar_calificacion' %}" class="btn btn-warning btn-sm fw-bold">
+                    <i class="fas fa-plus"></i> Ingresar Nuevo
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body bg-light border-bottom">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Año (Ejercicio)</label>
+                    <input type="number" name="anio" class="form-control form-control-sm" value="{{ anio_filter|default:'' }}" placeholder="Ej: 2025">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Mercado</label>
+                    <select name="mercado" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        <option value="AC" {% if mercado_filter == 'AC' %}selected{% endif %}>Acciones</option>
+                        <option value="FI" {% if mercado_filter == 'FI' %}selected{% endif %}>Fondos Inversión</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-search"></i> Buscar</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-striped table-bordered mb-0" style="font-size: 0.9rem;">
+                <thead class="table-secondary text-center">
+                    <tr>
+                        <th>Año</th>
+                        <th>Mercado</th>
+                        <th>Nemo / Instrumento</th>
+                        <th>Fecha Pago</th>
+                        <th>Secuencia</th>
+                        <th>Valor Histórico</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cal in page_obj %}
+                    <tr>
+                        <td class="text-center fw-bold">{{ cal.anio }}</td>
+                        <td class="text-center">{{ cal.mercado }}</td>
+                        <td>{{ cal.instrumento }}</td>
+                        <td class="text-center">{{ cal.fecha_pago|date:"d-m-Y" }}</td>
+                        <td class="text-center text-muted small">{{ cal.secuencia_evento }}</td>
+                        <td class="text-end">{{ cal.valor_historico }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'modificar_calificacion' cal.id %}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'eliminar_calificacion_tributaria' cal.id %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            No hay calificaciones registradas aún.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer py-2">
+            {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link">Pág {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

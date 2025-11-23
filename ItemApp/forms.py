@@ -1,15 +1,17 @@
 from django import forms
 from django.contrib.auth.models import User 
-from .models import RegistroNUAM 
 import datetime
-from .models import Clasificacion
-from django.contrib.auth.models import User
+
+
+from .models import RegistroNUAM, Clasificacion, CalificacionTributaria
 
 PAISES_CHOICES = [
     ('chile', 'Chile'),
     ('colombia', 'Colombia'),
     ('peru', 'Perú')
 ]
+
+
 
 class RegistroNUAMForm(forms.Form):
     nombre_completo = forms.CharField(
@@ -55,6 +57,7 @@ class RegistroNUAMForm(forms.Form):
         if password and password2 and password != password2:
             raise forms.ValidationError("Las contraseñas no coinciden.")
         return password2
+    
     def clean_fecha_nacimiento(self):
         fecha_nacimiento = self.cleaned_data.get('fecha_nacimiento')
         if fecha_nacimiento:
@@ -75,9 +78,7 @@ class ClasificacionForm(forms.ModelForm):
             'nombre': 'Nombre de la Clasificación',
         }
 
-
 class CargaMasivaForm(forms.Form):
-    
     clasificacion = forms.ModelChoiceField(
         queryset=Clasificacion.objects.all(),
         label="Seleccionar Clasificación",
@@ -109,13 +110,43 @@ class CargaMasivaForm(forms.Form):
     def clean_archivo_masivo(self):
         archivo = self.cleaned_data.get('archivo_masivo')
         if archivo:
-            # Validar tamaño (10MB máximo)
             if archivo.size > 10 * 1024 * 1024:
                 raise forms.ValidationError("El archivo es demasiado grande. El tamaño máximo es 10MB.")
-            
-            # Validar extensión
             nombre = archivo.name.lower()
             if not (nombre.endswith('.csv') or nombre.endswith('.xlsx') or nombre.endswith('.xls')):
                 raise forms.ValidationError("Formato de archivo no soportado. Use .csv, .xlsx o .xls")
-        
         return archivo
+
+
+
+class CalificacionForm(forms.ModelForm):
+    """ Formulario para la carga manual y edición de Calificaciones (UI_INGRESO_CALIFICACIONES) """
+    class Meta:
+        model = CalificacionTributaria
+        fields = '__all__'
+        widgets = {
+            'fecha_pago': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'mercado': forms.Select(attrs={'class': 'form-select'}),
+            'instrumento': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
+            'anio': forms.NumberInput(attrs={'class': 'form-control'}),
+            'secuencia_evento': forms.NumberInput(attrs={'class': 'form-control'}),
+            'valor_historico': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.00000001'}),
+            
+            
+            'isfut': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ingreso_por_montos': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name.startswith('factor_'):
+                field.widget.attrs.update({'class': 'form-control', 'step': '0.00000001'})
+
+class CargaMasivaCalificacionForm(forms.Form):
+    """ Formulario específico para la carga masiva de Excel de Calificaciones Tributarias """
+    archivo_excel = forms.FileField(
+        label="Seleccionar Archivo Excel de Calificaciones",
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx, .xls'})
+    )

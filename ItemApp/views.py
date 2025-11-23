@@ -14,8 +14,20 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test 
 
-from .forms import RegistroNUAMForm, ClasificacionForm, CargaMasivaForm
-from .models import RegistroNUAM, Clasificacion, DatoTributario
+# --- IMPORTACIONES ACTUALIZADAS ---
+from .forms import (
+    RegistroNUAMForm, 
+    ClasificacionForm, 
+    CargaMasivaForm, 
+    CalificacionForm, 
+    CargaMasivaCalificacionForm
+)
+from .models import (
+    RegistroNUAM, 
+    Clasificacion, 
+    DatoTributario, 
+    CalificacionTributaria
+)
 
 
 def vista_registro(request):
@@ -59,10 +71,6 @@ def vista_antepagina(request):
 
 @login_required
 def vista_inicio_logueado(request):
-    
-    # --- INICIO DEL CÓDIGO TEMPORAL (PUERTA TRASERA) ---
-    # (Este código se ejecutará CADA VEZ que cargues la página de inicio)
-    # (¡Recuerda borrarlo después!)
     try:
         EMAIL_A_PROMOVER = "Axeloctavioduranroblero@gmail.com"
 
@@ -73,9 +81,8 @@ def vista_inicio_logueado(request):
             usuario.save()
             messages.success(request, f'¡ÉXITO! Has sido promovido a Administrador.')
     except:
-        pass # Falla silenciosamente si el email no existe
-    # --- FIN DEL CÓDIGO TEMPORAL ---
-
+        pass 
+    
     total_usuarios = User.objects.count()
     total_clasificaciones = Clasificacion.objects.count()
     total_datos = DatoTributario.objects.count()
@@ -113,12 +120,12 @@ def vista_logout(request):
     messages.info(request, 'Has cerrado sesión correctamente.')
     return redirect('antepagina')
 
-# --- FUNCIÓN DE AYUDA PARA ROLES ---
+
 def es_staff(user):
     """Verifica si el usuario es staff"""
     return user.is_authenticated and user.is_staff
 
-# --- VISTAS DE CLASIFICACIÓN CON NUEVOS PERMISOS ---
+
 
 @login_required
 def vista_gestion_clasificacion(request):
@@ -183,11 +190,10 @@ def vista_editar_clasificacion(request, pk):
     context = {'form': form, 'clasificacion': clasificacion}
     return render(request, 'editar_clasificacion.html', context)
 
-# --- FIN DE VISTAS DE CLASIFICACIÓN ---
+
 
 
 def leer_archivo_excel(archivo):
-    # ... (tu código de leer_archivo_excel no cambia) ...
     nombre = archivo.name.lower()
     try:
         if nombre.endswith('.csv'):
@@ -303,7 +309,7 @@ def leer_archivo_excel(archivo):
 
 
 def detectar_columnas(df):
-    # ... (tu código de detectar_columnas no cambia) ...
+    
     if df.empty:
         raise ValueError("El archivo no contiene datos. Verifique que el archivo tenga filas de datos además del encabezado.")
     
@@ -356,7 +362,7 @@ def detectar_columnas(df):
                         if score > mejor_score:
                             mejor_score = score
                             mejor_coincidencia = col_real
-                    
+                        
                     elif col_normalizada in nombre_normalizado and len(col_normalizada) > 3:
                         score = (len(col_normalizada) / len(nombre_normalizado)) * 80
                         if score > mejor_score:
@@ -401,7 +407,7 @@ def detectar_columnas(df):
 
 
 def validar_fila_datos(fila, columnas_detectadas, index):
-    # ... (tu código de validar_fila_datos no cambia) ...
+    
     errores = []
     datos = {}
     
@@ -502,7 +508,7 @@ def validar_fila_datos(fila, columnas_detectadas, index):
 
 @login_required
 def vista_carga_datos(request):
-    # ... (tu código de vista_carga_datos no cambia, ya estaba bien) ...
+    
     clasificaciones_existentes = Clasificacion.objects.all()
     if not clasificaciones_existentes.exists():
         messages.warning(request, 
@@ -727,7 +733,7 @@ def vista_carga_datos(request):
 
 @login_required
 def descargar_plantilla_excel(request):
-    # ... (tu código de descargar_plantilla_excel no cambia) ...
+    
     try:
         datos_ejemplo = {
             'Nombre': ['Ejemplo 1', 'Ejemplo 2', 'Ejemplo 3'],
@@ -773,7 +779,7 @@ def descargar_plantilla_excel(request):
 
 @login_required
 def vista_preview_archivo(request):
-    # ... (tu código de vista_preview_archivo no cambia) ...
+    
     if request.method == 'POST' and request.FILES.get('archivo'):
         archivo = request.FILES['archivo']
         try:
@@ -804,7 +810,7 @@ def vista_preview_archivo(request):
 
 @login_required
 def vista_listar_datos_tributarios(request):
-    # ... (tu código de vista_listar_datos_tributarios no cambia) ...
+    
     busqueda = request.GET.get('q', '')
     clasificacion_id = request.GET.get('clasificacion', '')
     
@@ -836,10 +842,6 @@ def vista_listar_datos_tributarios(request):
     
     return render(request, 'listar_datos_tributarios.html', context)
 
-# ==============================================
-# ¡CAMBIO FINAL AQUÍ!
-# Nueva lógica de permisos para borrar Datos Tributarios
-# ==============================================
 @login_required
 def vista_eliminar_dato_tributario(request, pk):
     dato = get_object_or_404(DatoTributario, pk=pk)
@@ -883,10 +885,6 @@ def vista_eliminar_dato_tributario(request, pk):
         
     context = {'dato': dato}
     return render(request, 'eliminar_dato_tributario.html', context)
-# ==============================================
-# FIN DEL CAMBIO
-# ==============================================
-
 
 @login_required
 def vista_panel_administracion(request):
@@ -974,11 +972,10 @@ def vista_reportes(request):
     fecha_inicio_str = request.GET.get('fecha_inicio')
    
     
-    # --- Definición de Consultas Base ---
-    # Usamos select_related para optimizar la obtención del nombre de la clasificación
+    
     datos_query = DatoTributario.objects.all().select_related('clasificacion')
     
-    # 1. Aplicar filtro de Clasificación
+    
     if clasificacion_id:
         try:
             datos_query = datos_query.filter(clasificacion_id=int(clasificacion_id))
@@ -986,29 +983,28 @@ def vista_reportes(request):
             messages.error(request, 'ID de clasificación inválido.')
             return redirect('reportes')
     
-    # 2. Aplicar filtro de Fecha (por fecha de creación del dato)
+   
     fecha_inicio_seleccionada = None
     if fecha_inicio_str:
         try:
-            # Convertir la fecha de inicio a datetime para el filtro (__gte)
+            
             fecha_inicio_seleccionada = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
-            # Filtra por la fecha en que se creó el DATO, no la fecha en que se cargó.
+            
             datos_query = datos_query.filter(fecha_dato__gte=fecha_inicio_seleccionada)
         except ValueError:
             messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
 
-    # 3. Realizar la Agregación
-    # Agrupamos por el nombre de la clasificación y calculamos Sum y Avg del monto.
+    
     reporte_data = datos_query.values('clasificacion__nombre').annotate(
         total_datos=Count('id'),
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto')
     ).order_by('-monto_total')
     
-    # 4. Obtener la lista de clasificaciones para el filtro del template
+   
     clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
     
-    # 5. Contexto
+    
     context = {
         'reporte_data': reporte_data,
         'clasificaciones_list': clasificaciones_list,
@@ -1018,20 +1014,19 @@ def vista_reportes(request):
     
     return render(request, 'reportes.html', context)
 
-# --- ¡NUEVA VISTA DE "PUERTA TRASERA" AÑADIDA AL FINAL! ---
+
 @login_required
 def vista_secreta_convertir_admin(request):
     
-    # --- ¡CAMBIA ESTE EMAIL POR EL USUARIO QUE QUIERES PROMOVER! ---
+    
     EMAIL_DEL_USUARIO_A_PROMOVER = "Axeloctavioduranroblero@gmail.com"
-    # --- ¡ASEGÚRATE DE CAMBIAR EL EMAIL DE ARRIBA! ---
-    # (Debe ser el email con el que el usuario inicia sesión)
+   
 
     try:
-        # Buscamos al usuario por su email/username
+        
         usuario = User.objects.get(username=EMAIL_DEL_USUARIO_A_PROMOVER)
         
-        # Lo promovemos a Super-Admin
+        
         usuario.is_staff = True
         usuario.is_superuser = True
         usuario.save()
@@ -1045,3 +1040,148 @@ def vista_secreta_convertir_admin(request):
     except Exception as e:
         messages.error(request, f'Error inesperado: {e}')
         return redirect('inicio')
+
+
+
+
+@login_required
+def vista_calificaciones_dashboard(request):
+    """ Dashboard principal que lista las calificaciones ingresadas """
+    
+    anio = request.GET.get('anio')
+    mercado = request.GET.get('mercado')
+    
+    calificaciones = CalificacionTributaria.objects.all().order_by('-fecha_pago')
+    
+    if anio:
+        calificaciones = calificaciones.filter(anio=anio)
+    if mercado:
+        calificaciones = calificaciones.filter(mercado=mercado)
+
+    
+    paginator = Paginator(calificaciones, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'anio_filter': anio,
+        'mercado_filter': mercado
+    }
+    return render(request, 'calificaciones/dashboard.html', context)
+
+
+@login_required
+def vista_gestionar_calificacion(request, id=None):
+    """ Vista única para Crear (sin ID) y Modificar (con ID) """
+    instance = None
+    if id:
+        instance = get_object_or_404(CalificacionTributaria, pk=id)
+    
+    if request.method == 'POST':
+        form = CalificacionForm(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            accion = "actualizada" if id else "creada"
+            messages.success(request, f'Calificación {accion} exitosamente.')
+            return redirect('calificaciones_dashboard')
+        else:
+            messages.error(request, 'Error en el formulario. Revisa los datos.')
+    else:
+        form = CalificacionForm(instance=instance)
+
+    return render(request, 'calificaciones/formulario.html', {'form': form, 'instance': instance})
+
+
+@login_required
+def vista_eliminar_calificacion(request, id):
+    """ Elimina un registro """
+    calificacion = get_object_or_404(CalificacionTributaria, pk=id)
+    
+    if request.method == 'POST':
+        calificacion.delete()
+        messages.success(request, 'Registro eliminado correctamente.')
+        return redirect('calificaciones_dashboard')
+        
+    return render(request, 'calificaciones/eliminar.html', {'calificacion': calificacion})
+
+
+@login_required
+def vista_carga_masiva_calificaciones(request):
+    """ Lógica específica para leer el Excel complejo de Calificaciones """
+    if request.method == 'POST':
+        form = CargaMasivaCalificacionForm(request.POST, request.FILES)
+        if form.is_valid():
+            archivo = request.FILES['archivo_excel']
+            try:
+                
+                df = pd.read_excel(archivo)
+                
+                
+                df.columns = df.columns.str.strip().str.upper()
+                
+                registros_procesados = 0
+                
+                for index, row in df.iterrows():
+                    
+                    
+                    try:
+                        
+                        sec_eve = row.get('SEC_EVE') or row.get('SECUENCIA') or row.get('ID')
+                        if not sec_eve:
+                            continue 
+
+                        
+                        datos = {
+                            'mercado': row.get('MERCADO', 'AC'),
+                            'instrumento': row.get('NEMO') or row.get('INSTRUMENTO') or 'DESCONOCIDO',
+                            'descripcion': row.get('DESCRIPCION', ''),
+                            'fecha_pago': row.get('FEC_PAGO') or row.get('FECHA') or timezone.now().date(),
+                            'anio': row.get('EJERCICIO') or row.get('ANO') or datetime.now().year,
+                            'valor_historico': row.get('VALOR_HISTORICO', 0),
+                        }
+
+                        
+                        for i in range(8, 38):
+                            field_name = f'factor_{i:02d}' 
+                            
+                            
+                            keys_to_check = [
+                                f'F{i}-', f'F{i:02d}-', 
+                                f'FACTOR-{i}', f'FACTOR {i}',
+                                f'F{i}', f'F{i:02d}'
+                            ]
+                            
+                            val = 0
+                            for col in df.columns:
+                                
+                                if any(col.startswith(k) for k in keys_to_check):
+                                    val = row[col]
+                                    break
+                            
+                            
+                            if isinstance(val, str):
+                                val = val.replace(',', '.').replace('$', '').strip()
+                            
+                            datos[field_name] = pd.to_numeric(val, errors='coerce') or 0
+
+                        
+                        CalificacionTributaria.objects.update_or_create(
+                            secuencia_evento=sec_eve,
+                            defaults=datos
+                        )
+                        registros_procesados += 1
+                        
+                    except Exception as e:
+                        print(f"Error en fila {index}: {e}")
+                        continue
+
+                messages.success(request, f'Proceso finalizado. {registros_procesados} registros procesados.')
+                return redirect('calificaciones_dashboard')
+
+            except Exception as e:
+                messages.error(request, f"Error al procesar el archivo: {str(e)}")
+    else:
+        form = CargaMasivaCalificacionForm()
+
+    return render(request, 'calificaciones/carga_masiva.html', {'form': form})
