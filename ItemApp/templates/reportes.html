@@ -61,7 +61,7 @@
         <div class="col-lg-12">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0" style="color: white !important;"><i class="fas fa-chart-bar me-2" style="color: yellow !important;"></i>Consolidación de Montos por Clasificación</h5>
+                    <h5 class="mb-0" style="color: white !important;"><i class="fas fa-chart-bar me-2" style="color: yellow !important;"></i>Consolidación de Montos por Calificación</h5>
                 </div>
                 <div class="card-body">
                     
@@ -131,16 +131,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const dataElement = document.getElementById('json-reporte-data');
         if (!dataElement) return;
 
-        // 1. Parsear los datos del JSON
         const rawReporteData = JSON.parse(dataElement.textContent.trim());
 
-        // 2. Procesar datos (QUITAMOS EL FILTRO QUE BORRABA LOS CEROS)
+       
         const reporteData = rawReporteData.map(item => ({
             nombre: item.nombre,
             monto_total: parseFloat(item.monto_total) || 0
         }));
 
-        // Validar si hay datos (aunque sean ceros)
+        
         if (reporteData.length === 0) {
             console.log("No hay datos para generar el gráfico.");
             return;
@@ -149,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const labels = reporteData.map(item => item.nombre);
         const data = reporteData.map(item => item.monto_total);
 
-        // Generar colores
+       
         const generateColors = (num) => {
             const color_base = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1', '#f8f9fa'];
             const colors = [];
