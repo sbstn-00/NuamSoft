@@ -1,0 +1,8 @@
+Django
+gunicorn
+PyMySQL
+dj-database-url
+whitenoise
+pandas
+openpyxl
+cryptography

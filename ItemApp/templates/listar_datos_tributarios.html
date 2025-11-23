@@ -1,0 +1,131 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_title %}
+    Datos Tributarios
+{% endblock %}
+
+{% block dashboard_page_title %}
+    Listado de Datos Tributarios
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Datos Tributarios</h5>
+                <a href="{% url 'carga_datos' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-upload me-1"></i> Cargar Datos
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre..." value="{{ busqueda }}">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="clasificacion" class="form-select">
+                                <option value="">Todas las calificaciones</option>
+                                {% for clas in clasificaciones %}
+                                    <option value="{{ clas.id }}" {% if clasificacion_seleccionada == clas.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ clas.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-1"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Calificación</th>
+                                    <th>Monto</th>
+                                    <th>Factor</th>
+                                    <th>Fecha</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Creado por</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dato in page_obj %}
+                                <tr>
+                                    <td><strong>{{ dato.nombre_dato }}</strong></td>
+                                    <td><span class="badge bg-info">{{ dato.clasificacion.nombre }}</span></td>
+                                    <td>$ {{ dato.monto|floatformat:2|default:"-" }}</td>
+                                    <td>{{ dato.factor|floatformat:4|default:"-" }}</td>
+                                    <td>{{ dato.fecha_dato|date:"d/m/Y"|default:"-" }}</td>
+                                    <td>{{ dato.creado_en|date:"d/m/Y H:i" }}</td>
+                                    <td>{{ dato.creado_por.username|default:"Sistema" }}</td>
+                                    <td>
+                                        {% if user.is_staff or dato.creado_por == user %}
+                                            <a href="{% url 'eliminar_dato_tributario' dato.pk %}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este dato?');">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted" title="No tienes permisos"><i class="fas fa-lock"></i></span>
+                                        {% endif %}
+                                        </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if busqueda %}&q={{ busqueda }}{% endif %}{% if clasificacion_seleccionada %}&clasificacion={{ clasificacion_seleccionada }}{% endif %}">Primera</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&q={{ busqueda }}{% endif %}{% if clasificacion_seleccionada %}&clasificacion={{ clasificacion_seleccionada }}{% endif %}">Anterior</a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&q={{ busqueda }}{% endif %}{% if clasificacion_seleccionada %}&clasificacion={{ clasificacion_seleccionada }}{% endif %}">Siguiente</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&q={{ busqueda }}{% endif %}{% if clasificacion_seleccionada %}&clasificacion={{ clasificacion_seleccionada }}{% endif %}">Última</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <p class="text-muted">
+                            Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <p>No se encontraron datos tributarios.</p>
+                        <a href="{% url 'carga_datos' %}" class="btn btn-primary">Cargar Datos</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
