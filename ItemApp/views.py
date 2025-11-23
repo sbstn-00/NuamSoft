@@ -1081,9 +1081,32 @@ def vista_gestionar_calificacion(request, id=None):
     if request.method == 'POST':
         form = CalificacionForm(request.POST, instance=instance)
         if form.is_valid():
-            form.save()
+        
+            calificacion = form.save()
+            
+            
+            try:
+                
+                clasificacion_auto, _ = Clasificacion.objects.get_or_create(
+                    nombre="Calificaciones Automáticas",
+                    defaults={'creado_por': request.user}
+                )
+                
+                
+                DatoTributario.objects.create(
+                    clasificacion=clasificacion_auto,
+                    nombre_dato=f"CALIF: {calificacion.instrumento} ({calificacion.anio})",
+                    monto=calificacion.valor_historico,
+                    factor=calificacion.factor_08, 
+                    fecha_dato=calificacion.fecha_pago,
+                    creado_por=request.user
+                )
+            except Exception as e:
+                print(f"Advertencia: No se pudo crear la copia automática: {e}")
+           
+
             accion = "actualizada" if id else "creada"
-            messages.success(request, f'Calificación {accion} exitosamente.')
+            messages.success(request, f'Calificación {accion} y registrada en Reportes exitosamente.')
             return redirect('calificaciones_dashboard')
         else:
             messages.error(request, 'Error en el formulario. Revisa los datos.')
@@ -1091,7 +1114,6 @@ def vista_gestionar_calificacion(request, id=None):
         form = CalificacionForm(instance=instance)
 
     return render(request, 'calificaciones/formulario.html', {'form': form, 'instance': instance})
-
 
 @login_required
 def vista_eliminar_calificacion(request, id):
