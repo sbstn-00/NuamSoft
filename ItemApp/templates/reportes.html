@@ -33,7 +33,6 @@
                                 <label for="id_clasificacion" class="form-label fw-semibold">Calificación:</label>
                                 <select name="clasificacion" id="id_clasificacion" class="form-select">
                                     <option value="">Todas las Calificaciones</option>
-                                    {# Las clasificaciones se pasan desde la vista (contexto: 'clasificaciones_list') #}
                                     {% for clas in clasificaciones_list %}
                                         <option value="{{ clas.id }}" {% if clasificacion_seleccionada == clas.id|stringformat:"s" %}selected{% endif %}>
                                             {{ clas.nombre }}
@@ -66,11 +65,9 @@
                 </div>
                 <div class="card-body">
                     
-                    {# Muestra el gráfico solo si hay datos #}
                     {% if reporte_data %}
                         {# 1. GRÁFICO #}
-                        <div class="mb-5">
-                            <canvas id="chartReporte" height="250"></canvas>
+                        <div class="mb-5" style="height: 300px;"> <canvas id="chartReporte"></canvas>
                         </div>
 
                         {# 2. TABLA DE DETALLES #}
@@ -112,20 +109,18 @@
     </div>
 </div>
 
-{# Script para pasar datos a Chart.js (JSON Data) #}
+{# === AQUÍ ESTÁ LA CORRECCIÓN IMPORTANTE === #}
 <script id="json-reporte-data" type="application/json">
     [
         {% for item in reporte_data %}
         {
-            // Usamos escapejs para manejar comillas o caracteres especiales en el nombre
             "nombre": "{{ item.clasificacion__nombre|escapejs }}",
-            // Aseguramos que sea un número flotante sin formato de moneda/coma
-            "monto_total": {{ item.monto_total|default:0|floatformat:2 }}
+            {# Usamos stringformat:'f' para que salga 1200.50 (con punto) y no 1.200,50 (con coma) #}
+            "monto_total": {{ item.monto_total|default:0|stringformat:'f' }}
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ]
 </script>
-
 {% endblock %}
 
 {% block scripts %}
@@ -139,36 +134,30 @@ document.addEventListener('DOMContentLoaded', function() {
         // 1. Parsear los datos del JSON
         const rawReporteData = JSON.parse(dataElement.textContent.trim());
 
-        // 2. Limpiar y validar datos:
-        //    a) Filtrar elementos donde el monto_total no sea null o cero.
-        //    b) Convertir el monto_total a flotante para Chart.js.
-        const reporteData = rawReporteData
-            .map(item => ({
-                nombre: item.nombre,
-                // Aseguramos que sea un número flotante, usando 0 si la conversión falla
-                monto_total: parseFloat(item.monto_total) || 0
-            }))
-            .filter(item => item.monto_total > 0); // Solo mantener categorías con montos > 0
+        // 2. Procesar datos (QUITAMOS EL FILTRO QUE BORRABA LOS CEROS)
+        const reporteData = rawReporteData.map(item => ({
+            nombre: item.nombre,
+            monto_total: parseFloat(item.monto_total) || 0
+        }));
 
-
+        // Validar si hay datos (aunque sean ceros)
         if (reporteData.length === 0) {
-            console.log("No hay datos válidos para generar el gráfico.");
+            console.log("No hay datos para generar el gráfico.");
             return;
         }
 
         const labels = reporteData.map(item => item.nombre);
         const data = reporteData.map(item => item.monto_total);
 
-        // Función para generar colores únicos (sin cambios)
+        // Generar colores
         const generateColors = (num) => {
-            const colors = [];
             const color_base = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1', '#f8f9fa'];
+            const colors = [];
             for(let i = 0; i < num; i++) {
                 colors.push(color_base[i % color_base.length]);
             }
             return colors;
         };
-        
         const backgroundColors = generateColors(labels.length);
 
         const ctx = document.getElementById('chartReporte').getContext('2d');
@@ -177,10 +166,10 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Monto Total Tributario ($)',
+                    label: 'Monto Total ($)',
                     data: data,
                     backgroundColor: backgroundColors,
-                    borderColor: backgroundColors,
+                    borderColor: '#333',
                     borderWidth: 1
                 }]
             },
@@ -190,10 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Monto Total'
-                        },
                         ticks: {
                             callback: function(value) {
                                 return '$' + value.toLocaleString('es-CL');
@@ -202,19 +187,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 },
                 plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Monto Tributario Consolidado por Clasificación',
-                        font: { size: 16 }
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$ ' + context.parsed.y.toLocaleString('es-CL');
+                            }
+                        }
                     }
                 }
             }
         });
     } catch (e) {
-        console.error("Error al cargar Chart.js para el reporte:", e);
+        console.error("Error al cargar Chart.js:", e);
     }
 });
 </script>
