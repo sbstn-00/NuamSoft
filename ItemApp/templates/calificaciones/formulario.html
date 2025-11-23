@@ -1,83 +1,97 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_base.html' %}
 
-{% block content %}
-<div class="container mt-4 mb-5">
-    <div class="card shadow border-0">
-        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+{% block dashboard_title %}
+    Gestión de Calificaciones
+{% endblock %}
+
+{% block dashboard_page_title %}
+    Formulario de Ingreso
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="card shadow border-0 mb-5">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                {% if instance %}Modificar{% else %}Ingresar{% endif %} Calificación Tributaria
+                <i class="fas fa-edit me-2"></i>
+                {% if instance %}Modificar{% else %}Ingresar{% endif %} Calificación
             </h5>
-            <a href="{% url 'calificaciones_dashboard' %}" class="btn btn-sm btn-light">Volver</a>
+            <a href="{% url 'calificaciones_dashboard' %}" class="btn btn-light btn-sm fw-bold text-primary">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Listado
+            </a>
         </div>
         
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
                 
-                <h6 class="text-primary border-bottom pb-2 mb-3">Datos del Instrumento</h6>
+                <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold">1. Datos del Instrumento</h6>
                 <div class="row g-3 mb-4">
                     <div class="col-md-2">
-                        <label class="form-label small">Mercado</label>
+                        <label class="form-label small fw-bold text-muted">Mercado</label>
                         {{ form.mercado }}
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small">Año Trib.</label>
+                        <label class="form-label small fw-bold text-muted">Año Trib.</label>
                         {{ form.anio }}
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label small">Instrumento / Nemo</label>
+                        <label class="form-label small fw-bold text-muted">Instrumento / Nemo</label>
                         {{ form.instrumento }}
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label small">Valor Histórico</label>
+                        <label class="form-label small fw-bold text-muted">Valor Histórico</label>
                         {{ form.valor_historico }}
                     </div>
                     
                     <div class="col-md-3">
-                        <label class="form-label small">Fecha Pago</label>
+                        <label class="form-label small fw-bold text-muted">Fecha Pago</label>
                         {{ form.fecha_pago }}
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small">Secuencia Evento (ID)</label>
+                        <label class="form-label small fw-bold text-muted">Secuencia Evento (ID)</label>
                         {{ form.secuencia_evento }}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small">Descripción</label>
+                        <label class="form-label small fw-bold text-muted">Descripción</label>
                         {{ form.descripcion }}
                     </div>
                     
-                    <div class="col-12 d-flex gap-4 mt-2">
-                        <div class="form-check">
+                    <div class="col-12 d-flex gap-4 mt-3 p-3 bg-light rounded">
+                        <div class="form-check form-switch">
                             {{ form.isfut }}
-                            <label class="form-check-label">ISFUT</label>
+                            <label class="form-check-label fw-bold">ISFUT</label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check form-switch ms-4">
                             {{ form.ingreso_por_montos }}
-                            <label class="form-check-label">Ingreso por Montos</label>
+                            <label class="form-check-label fw-bold">Ingreso por Montos</label>
                         </div>
                     </div>
                 </div>
 
-                <h6 class="text-primary border-bottom pb-2 mb-3">Factores y Créditos</h6>
-                <div class="row g-2 p-3 bg-light rounded border">
-                    {% for field in form %}
-                        {% if 'factor' in field.name %}
-                        <div class="col-md-4 col-lg-3">
-                            <div class="form-group mb-2">
-                                <label class="small text-muted d-block text-truncate" title="{{ field.label }}">
-                                    {{ field.label }}
-                                </label>
-                                {{ field }}
+                <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold">2. Factores y Créditos</h6>
+                <div class="p-3 bg-light rounded border mb-4">
+                    <div class="row g-2">
+                        {% for field in form %}
+                            {% if 'factor' in field.name %}
+                            <div class="col-md-4 col-lg-3">
+                                <div class="form-floating mb-1">
+                                    {{ field }}
+                                    <label class="small text-muted" style="font-size: 0.8rem; opacity: 0.7;">{{ field.label }}</label>
+                                </div>
                             </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                    <a href="{% url 'calificaciones_dashboard' %}" class="btn btn-secondary me-md-2">Cancelar</a>
-                    <button type="submit" class="btn btn-primary px-4">
-                        {% if instance %}Guardar Cambios{% else %}Ingresar{% endif %}
+                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
+                    <a href="{% url 'calificaciones_dashboard' %}" class="btn btn-secondary px-4">
+                        <i class="fas fa-times me-2"></i> Cancelar y Volver
+                    </a>
+                    <button type="submit" class="btn btn-success px-5 py-2 fw-bold shadow-sm">
+                        <i class="fas fa-save me-2"></i> 
+                        {% if instance %}Guardar Cambios{% else %}Guardar Calificación{% endif %}
                     </button>
                 </div>
             </form>
