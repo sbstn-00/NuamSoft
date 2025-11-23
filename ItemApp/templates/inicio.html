@@ -31,13 +31,32 @@
         </div>
     </div>
 
+    <div class="card mb-4 shadow border-0 bg-primary text-white overflow-hidden position-relative">
+        <div class="position-absolute end-0 top-0 h-100 d-flex align-items-center me-5 opacity-25" style="pointer-events: none;">
+            <i class="fas fa-file-invoice-dollar fa-6x text-white"></i>
+        </div>
+        
+        <div class="card-body p-4 position-relative">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="fw-bold"><i class="fas fa-table me-2"></i>Calificaciones Tributarias</h3>
+                    <p class="mb-0 fs-5 text-white-50">Gestiona instrumentos, factores tributarios y realiza cargas masivas de Excel.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="{% url 'calificaciones_dashboard' %}" class="btn btn-light btn-lg fw-bold text-primary shadow-sm">
+                        Ingresar al Módulo <i class="fas fa-arrow-circle-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row g-4">
         <div class="col-md-3">
             <div class="card shadow-sm border-0 border-primary-subtle bg-primary-subtle text-primary-emphasis h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <small class="text-muted">Calificaciones</small>
+                            <small class="text-muted">Clasificaciones</small>
                             <h2 class="fw-bold">{{ total_clasificaciones|default:"0" }}</h2>
                         </div>
                         <i class="fas fa-layer-group fa-3x text-primary opacity-25"></i>
@@ -194,7 +213,7 @@ try {
 }
 
 
-// --- GRÁFICO 2: LÍNEA (Sigue estático, no tenemos datos de serie de tiempo) ---
+
 const ctx2 = document.getElementById('chartActividad');
 new Chart(ctx2, {
     type: 'line',
