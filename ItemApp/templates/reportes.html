@@ -28,9 +28,8 @@
                 </div>
                 <div class="card-body">
                     <form method="GET" id="formReporte">
-                        
-                        {# DISEÑO CORREGIDO: USAMOS D-FLEX Y ALINEAMOS LOS ELEMENTOS EN UNA SOLA LÍNEA #}
-                        <div class="row g-3 align-items-end"> 
+                        {# DISEÑO FINAL Y ROBUSTO PARA ALINEACIÓN #}
+                        <div class="row g-3 align-items-start"> 
                             
                             {# CALIFICACIÓN #}
                             <div class="col-md-4">
@@ -52,17 +51,19 @@
                                 <small class="text-muted">Filtra los datos creados a partir de esta fecha.</small>
                             </div>
 
-                            {# BOTÓN GENERAR: ALINEADO HORIZONTALMENTE CON LOS CAMPOS #}
+                            {# BOTÓN GENERAR #}
                             <div class="col-md-3">
-                                <button type="submit" class="btn btn-success w-100" style="height: 43px;">
-                                    <i class="fas fa-search me-1"></i> Generar
-                                </button>
+                                {# El d-flex ayuda a que el botón se ajuste verticalmente #}
+                                <div class="d-flex align-items-end" style="height: 100%;"> 
+                                    <button type="submit" class="btn btn-success w-100" style="padding: 9px 12px;">
+                                        <i class="fas fa-search me-1"></i> Generar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-            {# RESTO DEL CÓDIGO (GRÁFICO/TABLA) - SIN CAMBIOS #}
         </div>
 
         <div class="col-lg-12">
@@ -194,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ticks: {
                             callback: function(value) {
                                 // Usamos el formato simple para evitar errores de inicialización
-                                return '$' + value.toLocaleString('es-CL', { maximumFractionDigits: 0 });
+                                return '$' + value.toLocaleString('es-CL');
                             }
                         }
                     }
