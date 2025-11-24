@@ -29,11 +29,11 @@
                 <div class="card-body">
                     <form method="GET" id="formReporte">
                         
-                        {# NUEVO DISEÑO: Contenedor Vertical de Filtros #}
-                        <div class="row g-4">
-                            
+                        {# DISEÑO CORREGIDO: USAMOS D-FLEX Y ALINEAMOS LOS ELEMENTOS EN UNA SOLA LÍNEA #}
+                        <div class="row g-3 align-items-end"> 
+                            
                             {# CALIFICACIÓN #}
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="id_clasificacion" class="form-label fw-semibold">Calificación:</label>
                                 <select name="clasificacion" id="id_clasificacion" class="form-select">
                                     <option value="">Todas las Calificaciones</option>
@@ -46,22 +46,23 @@
                             </div>
 
                             {# FECHA DE INICIO #}
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <label for="id_fecha_inicio" class="form-label fw-semibold">Fecha de Inicio (Dato):</label>
                                 <input type="date" name="fecha_inicio" id="id_fecha_inicio" class="form-control" value="{{ fecha_inicio_seleccionada|default:"" }}">
                                 <small class="text-muted">Filtra los datos creados a partir de esta fecha.</small>
                             </div>
-                            
-                            {# BOTÓN GENERAR #}
-                            <div class="col-12 text-end">
-                                <button type="submit" class="btn btn-success px-4">
-                                    <i class="fas fa-search me-1"></i> Generar Reporte
+
+                            {# BOTÓN GENERAR: ALINEADO HORIZONTALMENTE CON LOS CAMPOS #}
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100" style="height: 43px;">
+                                    <i class="fas fa-search me-1"></i> Generar
                                 </button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
+            {# RESTO DEL CÓDIGO (GRÁFICO/TABLA) - SIN CAMBIOS #}
         </div>
 
         <div class="col-lg-12">
