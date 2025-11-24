@@ -11,14 +11,7 @@ class RegistroNUAM(models.Model):
         ('chile', 'Chile'),
         ('colombia', 'Colombia'),
         ('peru', 'Perú'),
-        ('argentina', 'Argentina'),
-        ('mexico', 'México'),
-        ('brasil', 'Brasil'),
-        ('ecuador', 'Ecuador'),
-        ('venezuela', 'Venezuela'),
-        ('uruguay', 'Uruguay'),
-        ('paraguay', 'Paraguay'),
-        ('bolivia', 'Bolivia'),
+
     ]
     pais = models.CharField(max_length=100, choices=PAISES_CHOICES)
     
