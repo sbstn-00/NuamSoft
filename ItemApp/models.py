@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# --- TUS MODELOS ORIGINALES (NO TOCADOS) ---
+
 
 class RegistroNUAM(models.Model):
     nombre_completo = models.CharField(max_length=255)

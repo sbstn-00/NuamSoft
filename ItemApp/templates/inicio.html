@@ -182,13 +182,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// --- GRÁFICO 1: PIE (Ahora dinámico) ---
+
 try {
     const statsData = JSON.parse(document.getElementById('json-stats-clasificacion').textContent);
     const labelsPie = statsData.map(item => item.nombre);
     const dataPie = statsData.map(item => item.total_datos);
     
-    // Solo mostramos el gráfico si hay datos
+   
     if (dataPie.length > 0) {
         const ctx1 = document.getElementById('chartClasificaciones');
         new Chart(ctx1, {

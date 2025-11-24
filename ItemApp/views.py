@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test 
 
-# --- IMPORTACIONES ACTUALIZADAS ---
+
 from .forms import (
     RegistroNUAMForm, 
     ClasificacionForm, 
@@ -846,37 +846,37 @@ def vista_listar_datos_tributarios(request):
 def vista_eliminar_dato_tributario(request, pk):
     dato = get_object_or_404(DatoTributario, pk=pk)
     
-    # Por defecto, el usuario no puede borrar
+    
     puede_borrar = False
     
-    # 1. ¿Es Admin? Si es admin, puede borrar cualquier cosa.
+    
     if request.user.is_staff:
         puede_borrar = True
         
-    # 2. Si NO es Admin, verificamos si es el dueño Y si es reciente
+    
     elif dato.creado_por == request.user:
-        # Definimos "reciente" como 10 minutos
+        
         tiempo_limite = timezone.now() - timedelta(minutes=10)
         
-        # Comprobamos si el dato fue creado DESPUÉS del tiempo límite
-        # (es decir, dentro de los últimos 10 minutos)
+        
+       
         if dato.creado_en > tiempo_limite:
             puede_borrar = True
         else:
-            # Es el dueño, pero ya pasó el tiempo
+           
             messages.error(request, 'No puedes eliminar este dato. Solo tienes 10 minutos de gracia para corregir errores.')
     
     else:
-        # No es admin y no es el dueño
+       
         messages.error(request, 'No tienes permiso para eliminar este dato.')
 
-    # --- Fin de la lógica de permisos ---
+    
 
     if not puede_borrar:
-        # Si ninguna regla le dio permiso, lo redirigimos
+        
         return redirect('listar_datos_tributarios')
 
-    # Si llegó hasta aquí, TIENE PERMISO.
+    
     if request.method == 'POST':
         nombre = dato.nombre_dato
         dato.delete()
