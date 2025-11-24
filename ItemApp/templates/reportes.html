@@ -28,11 +28,11 @@
                 </div>
                 <div class="card-body">
                     <form method="GET" id="formReporte">
-                        {# DISEÑO FINAL Y ROBUSTO PARA ALINEACIÓN #}
-                        <div class="row g-3 align-items-start"> 
+                        {# NUEVO DISEÑO: UTILIZA D-FLEX PARA ALINEAR TODOS LOS ELEMENTOS EN UNA FILA #}
+                        <div class="d-flex flex-wrap align-items-end justify-content-start g-3">
                             
-                            {# CALIFICACIÓN #}
-                            <div class="col-md-4">
+                            {# CALIFICACIÓN - Ancho fijo para campo de selección #}
+                            <div class="me-3" style="width: 250px;">
                                 <label for="id_clasificacion" class="form-label fw-semibold">Calificación:</label>
                                 <select name="clasificacion" id="id_clasificacion" class="form-select">
                                     <option value="">Todas las Calificaciones</option>
@@ -44,21 +44,18 @@
                                 </select>
                             </div>
 
-                            {# FECHA DE INICIO #}
-                            <div class="col-md-5">
+                            {# FECHA DE INICIO - Ancho fijo para campo de fecha #}
+                            <div class="me-3" style="width: 250px;">
                                 <label for="id_fecha_inicio" class="form-label fw-semibold">Fecha de Inicio (Dato):</label>
                                 <input type="date" name="fecha_inicio" id="id_fecha_inicio" class="form-control" value="{{ fecha_inicio_seleccionada|default:"" }}">
                                 <small class="text-muted">Filtra los datos creados a partir de esta fecha.</small>
                             </div>
 
-                            {# BOTÓN GENERAR #}
-                            <div class="col-md-3">
-                                {# El d-flex ayuda a que el botón se ajuste verticalmente #}
-                                <div class="d-flex align-items-end" style="height: 100%;"> 
-                                    <button type="submit" class="btn btn-success w-100" style="padding: 9px 12px;">
-                                        <i class="fas fa-search me-1"></i> Generar
-                                    </button>
-                                </div>
+                            {# BOTÓN GENERAR - Se alinea perfectamente con align-items-end #}
+                            <div class="mt-3 mt-sm-0">
+                                <button type="submit" class="btn btn-success" style="height: 43px; padding: 0 20px;">
+                                    <i class="fas fa-search me-1"></i> Generar
+                                </button>
                             </div>
                         </div>
                     </form>
