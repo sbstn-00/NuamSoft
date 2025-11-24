@@ -29,11 +29,11 @@
                 <div class="card-body">
                     <form method="GET" id="formReporte">
                         
-                        {# APLICAMOS ALIGN-ITEMS-START PARA QUE TODO INICIE EN LA MISMA LÍNEA SUPERIOR #}
-                        <div class="row g-3 align-items-start"> 
-                            
+                        {# NUEVO DISEÑO: Contenedor Vertical de Filtros #}
+                        <div class="row g-4">
+                            
                             {# CALIFICACIÓN #}
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="id_clasificacion" class="form-label fw-semibold">Calificación:</label>
                                 <select name="clasificacion" id="id_clasificacion" class="form-select">
                                     <option value="">Todas las Calificaciones</option>
@@ -46,16 +46,16 @@
                             </div>
 
                             {# FECHA DE INICIO #}
-                            <div class="col-md-5">
+                            <div class="col-md-6">
                                 <label for="id_fecha_inicio" class="form-label fw-semibold">Fecha de Inicio (Dato):</label>
                                 <input type="date" name="fecha_inicio" id="id_fecha_inicio" class="form-control" value="{{ fecha_inicio_seleccionada|default:"" }}">
                                 <small class="text-muted">Filtra los datos creados a partir de esta fecha.</small>
                             </div>
-
-                            {# BOTÓN GENERAR (Alineación con top: 0 y margen superior 30px) #}
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-success w-100" style="padding: 12px; margin-top: 25px;">
-                                    <i class="fas fa-search me-1"></i> Generar
+                            
+                            {# BOTÓN GENERAR #}
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="fas fa-search me-1"></i> Generar Reporte
                                 </button>
                             </div>
                         </div>
