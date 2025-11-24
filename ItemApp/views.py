@@ -963,19 +963,18 @@ def vista_panel_administracion(request):
     return render(request, 'admin_panel.html', context)
 
 
+# ... (código anterior de la vista_reportes) ...
+
 @login_required
 def vista_reportes(request):
     """Genera reportes de montos tributarios agrupados por clasificación y filtrados por fecha."""
     
-    
     clasificacion_id = request.GET.get('clasificacion')
     fecha_inicio_str = request.GET.get('fecha_inicio')
-   
-    
     
     datos_query = DatoTributario.objects.all().select_related('clasificacion')
     
-    
+    # 1. Aplicar Filtros (Clasificación)
     if clasificacion_id:
         try:
             datos_query = datos_query.filter(clasificacion_id=int(clasificacion_id))
@@ -983,27 +982,38 @@ def vista_reportes(request):
             messages.error(request, 'ID de clasificación inválido.')
             return redirect('reportes')
     
-   
+    # 2. Aplicar Filtros (Fecha)
     fecha_inicio_seleccionada = None
     if fecha_inicio_str:
         try:
-            
             fecha_inicio_seleccionada = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
-            
             datos_query = datos_query.filter(fecha_dato__gte=fecha_inicio_seleccionada)
         except ValueError:
             messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
 
-    
+    # 3. Agregación de Datos (SQL Group By)
     reporte_data = datos_query.values('clasificacion__nombre').annotate(
         total_datos=Count('id'),
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto')
     ).order_by('-monto_total')
     
-   
-    clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
+    # === CORRECCIÓN CLAVE: Convertir Decimals a Floats para JSON/Chart.js ===
+    # Iteramos y aseguramos que los montos sean float o None
+    reporte_data = [
+        {
+            'clasificacion__nombre': item['clasificacion__nombre'],
+            'total_datos': item['total_datos'],
+            # Convertir Decimal a float, usando 0.0 si es None
+            'monto_total': float(item['monto_total']) if item['monto_total'] is not None else 0.0,
+            'monto_promedio': float(item['monto_promedio']) if item['monto_promedio'] is not None else 0.0,
+        }
+        for item in reporte_data
+    ]
+    # =========================================================================
     
+    # 4. Obtener listas de clasificación
+    clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
     
     context = {
         'reporte_data': reporte_data,
