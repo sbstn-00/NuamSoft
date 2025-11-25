@@ -1,209 +1,183 @@
-    {% extends 'dashboard_base.html' %}
-    {% load static %}
+{% extends 'dashboard_base.html' %}
+{% load static %}
 
-    {% block dashboard_title %}
-        Reportes Analíticos
-    {% endblock %}
+{% block dashboard_title %}
+    Reportes Analíticos
+{% endblock %}
 
-    {% block dashboard_page_title %}
-        <i class="fas fa-chart-bar"></i> Reporte de Concentración Tributaria
-    {% endblock %}
+{% block dashboard_page_title %}
+    <i class="fas fa-chart-bar"></i> Reporte de Concentración Tributaria
+{% endblock %}
 
-    {% block dashboard_content %}
-    <div class="container-fluid">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+{% block dashboard_content %}
+<div class="container-fluid">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros del Reporte</h5>
                 </div>
-            {% endfor %}
-        {% endif %}
-
-        <div class="row">
-            <div class="col-lg-12 mb-4">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros del Reporte</h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="GET" id="formReporte">
-                            <div class="row g-3">
-                                <div class="col-md-5">
-                                    <label for="id_clasificacion" class="form-label fw-semibold">Calificación:</label>
-                                    <select name="clasificacion" id="id_clasificacion" class="form-select">
-                                        <option value="">Todas las Calificaciones</option>
-                                        {% for clas in clasificaciones_list %}
-                                            <option value="{{ clas.id }}" {% if clasificacion_seleccionada == clas.id|stringformat:"s" %}selected{% endif %}>
-                                                {{ clas.nombre }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
-                                <div class="col-md-5">
-                                    <label for="id_fecha_inicio" class="form-label fw-semibold">Fecha de Inicio (Dato):</label>
-                                    <input type="date" name="fecha_inicio" id="id_fecha_inicio" class="form-control" value="{{ fecha_inicio_seleccionada|default:"" }}">
-                                    <small class="text-muted">Filtra los datos creados a partir de esta fecha.</small>
-                                </div>
-
-                                <div class="col-md-2 d-flex align-items-end">
-                                    <button type="submit" class="btn btn-success w-100">
-                                        <i class="fas fa-search me-1"></i> Generar
-                                    </button>
-                                </div>
+                <div class="card-body">
+                    <form method="GET" id="formReporte">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label for="id_clasificacion" class="form-label fw-semibold">Calificación:</label>
+                                <select name="clasificacion" id="id_clasificacion" class="form-select">
+                                    <option value="">Todas las Calificaciones</option>
+                                    {% for clas in clasificaciones_list %}
+                                        <option value="{{ clas.id }}" {% if clasificacion_seleccionada == clas.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ clas.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                             </div>
-                        </form>
-                    </div>
+
+                            <div class="col-md-5">
+                                <label for="id_fecha_inicio" class="form-label fw-semibold">Fecha de Inicio (Dato):</label>
+                                <input type="date" name="fecha_inicio" id="id_fecha_inicio" class="form-control" value="{{ fecha_inicio_seleccionada|default:"" }}">
+                                <small class="text-muted">Filtra los datos creados a partir de esta fecha.</small>
+                            </div>
+
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-search me-1"></i> Generar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0" style="color: white !important;"><i class="fas fa-chart-bar me-2" style="color: yellow !important;"></i>Consolidación de Montos por Calificación</h5>
-                    </div>
-                    <div class="card-body">
+        <div class="col-lg-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2" style="color: yellow !important;"></i>Consolidación de Montos por Calificación</h5>
+                </div>
+                <div class="card-body">
+                    
+                    {% if reporte_data %}
                         
-                        {% if reporte_data %}
-                            
+                        <!-- CONTENEDOR GRÁFICO -->
+                        <div class="mb-5" style="height: 300px;">
+                            <canvas id="chartReporte"></canvas>
+                        </div>
 
-                            <div class="mb-5" style="height: 300px;"> <canvas id="chartReporte"></canvas>
-                            </div>
-
-                            {# 2. TABLA DE DETALLES #}
-                            <h6 class="fw-bold mt-4 mb-3"><i class="fas fa-table me-1"></i>Detalle Agrupado:</h6>
-                            
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover table-sm align-middle">
-                                    <thead class="table-dark">
+                        <!-- TABLA -->
+                        <h6 class="fw-bold mt-4 mb-3"><i class="fas fa-table me-1"></i>Detalle Agrupado:</h6>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover table-sm align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Calificación</th>
+                                        <th class="text-end">Total Datos</th>
+                                        <th class="text-end">Monto Total</th>
+                                        <th class="text-end">Monto Promedio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in reporte_data %}
                                         <tr>
-                                            <th>Calificación</th>
-                                            <th class="text-end">Total Datos</th>
-                                            <th class="text-end">Monto Total</th>
-                                            <th class="text-end">Monto Promedio</th>
+                                            <td><span class="badge bg-primary">{{ item.clasificacion__nombre }}</span></td>
+                                            <td class="text-end fw-semibold">{{ item.total_datos }}</td>
+                                            <td class="text-end"><strong>${{ item.monto_total|floatformat:2|default:"0.00" }}</strong></td>
+                                            <td class="text-end">${{ item.monto_promedio|floatformat:2|default:"0.00" }}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for item in reporte_data %}
-                                            <tr>
-                                                <td><span class="badge bg-primary">{{ item.clasificacion__nombre }}</span></td>
-                                                <td class="text-end fw-semibold">{{ item.total_datos }}</td>
-                                                <td class="text-end"><strong>${{ item.monto_total|floatformat:2|default:"0.00" }}</strong></td>
-                                                <td class="text-end">${{ item.monto_promedio|floatformat:2|default:"0.00" }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="alert alert-info text-center p-4">
-                                <i class="fas fa-search fa-3x text-info mb-3"></i>
-                                <h5 class="mb-2">Aplica los filtros para generar tu primer reporte.</h5>
-                                <p class="mb-0">Asegúrate de que existan datos tributarios con las calificaciones seleccionadas.</p>
-                            </div>
-                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center p-4">
+                            <i class="fas fa-search fa-3x text-info mb-3"></i>
+                            <h5 class="mb-2">Aplica los filtros para generar tu primer reporte.</h5>
+                            <p class="mb-0">Asegúrate de que existan datos tributarios con las calificaciones seleccionadas.</p>
+                        </div>
+                    {% endif %}
 
-                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    {# === AQUÍ ESTÁ LA CORRECCIÓN IMPORTANTE === #}
-    <script id="json-reporte-data" type="application/json">
-        {{ reporte_data|json_script:"reporteDataJSON" }}
-    </script>
+<!-- JSON SEGURO SIN ERRORES -->
+{{ reporte_data|json_script:"reporteData" }}
 
-        [
-            {% for item in reporte_data %}
-            {
-                "nombre": "{{ item.clasificacion__nombre|escapejs }}",
-                {# Usamos stringformat:'f' para que salga 1200.50 (con punto) y no 1.200,50 (con coma) #}
-                "monto_total": {{ item.monto_total|default:"0"|floatformat:"2"|cut:"," }}
-            }{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ]
-    </script>
-    {% endblock %}
+{% endblock %}
 
-    {% block scripts %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            const dataElement = document.getElementById('json-reporte-data');
-            if (!dataElement) return;
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-            const rawReporteData = JSON.parse(dataElement.textContent.trim());
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        // LEER JSON GENERADO POR DJANGO
+        const rawReporteData = JSON.parse(document.getElementById('reporteData').textContent);
 
-        
-            const reporteData = rawReporteData.map(item => ({
-                nombre: item.nombre,
-                monto_total: parseFloat(item.monto_total) || 0
-            }));
+        // Adaptar al formato esperado por Chart.js
+        const reporteData = rawReporteData.map(item => ({
+            nombre: item.clasificacion__nombre,
+            monto_total: parseFloat(item.monto_total) || 0
+        }));
 
-            
-            if (reporteData.length === 0) {
-                console.log("No hay datos para generar el gráfico.");
-                return;
-            }
+        if (reporteData.length === 0) return;
 
-            const labels = reporteData.map(item => item.nombre);
-            const data = reporteData.map(item => item.monto_total);
+        const labels = reporteData.map(item => item.nombre);
+        const data = reporteData.map(item => item.monto_total);
 
-        
-            const generateColors = (num) => {
-                const color_base = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1', '#f8f9fa'];
-                const colors = [];
-                for(let i = 0; i < num; i++) {
-                    colors.push(color_base[i % color_base.length]);
-                }
-                return colors;
-            };
-            const backgroundColors = generateColors(labels.length);
+        const generateColors = (num) => {
+            const base = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1', '#f8f9fa'];
+            return Array.from({ length: num }, (_, i) => base[i % base.length]);
+        };
 
-            const ctx = document.getElementById('chartReporte').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Monto Total ($)',
-                        data: data,
-                        backgroundColor: backgroundColors,
-                        borderColor: '#333',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toLocaleString('es-CL');
-                                }
-                            }
+        const ctx = document.getElementById('chartReporte').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Monto Total ($)',
+                    data,
+                    backgroundColor: generateColors(labels.length),
+                    borderColor: '#333',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: v => '$' + v.toLocaleString('es-CL')
                         }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return '$ ' + context.parsed.y.toLocaleString('es-CL');
-                                }
-                            }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => '$ ' + ctx.parsed.y.toLocaleString('es-CL')
                         }
                     }
                 }
-            });
-        } catch (e) {
-            console.error("Error al cargar Chart.js:", e);
-        }
-    });
-    </script>
-    {% endblock %}
+            }
+        });
+    } catch (e) {
+        console.error("Error al generar gráfico:", e);
+    }
+});
+</script>
+{% endblock %}
