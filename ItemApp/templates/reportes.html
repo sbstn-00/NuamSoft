@@ -66,7 +66,7 @@
                     <div class="card-body">
                         
                         {% if reporte_data %}
-                            <pre>{{ reporte_data }}</pre>
+                            
 
                             <div class="mb-5" style="height: 300px;"> <canvas id="chartReporte"></canvas>
                             </div>
@@ -112,6 +112,9 @@
 
     {# === AQUÍ ESTÁ LA CORRECCIÓN IMPORTANTE === #}
     <script id="json-reporte-data" type="application/json">
+        {{ reporte_data|json_script:"reporteDataJSON" }}
+    </script>
+
         [
             {% for item in reporte_data %}
             {
