@@ -973,16 +973,16 @@ def vista_reportes(request):
     fecha_inicio_str = request.GET.get('fecha_inicio')
     
     datos_query = DatoTributario.objects.all().select_related('clasificacion')
-    
 
+    
     if clasificacion_id:
         try:
             datos_query = datos_query.filter(clasificacion_id=int(clasificacion_id))
         except ValueError:
             messages.error(request, 'ID de clasificación inválido.')
             return redirect('reportes')
-    
 
+    
     fecha_inicio_seleccionada = None
     if fecha_inicio_str:
         try:
@@ -991,23 +991,22 @@ def vista_reportes(request):
         except ValueError:
             messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
 
-
-    reporte_data = datos_query.values('clasificacion__nombre').annotate(
+    
+    reporte_data_qs = datos_query.values('clasificacion__nombre').annotate(
         total_datos=Count('id'),
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto')
     ).order_by('-monto_total')
-    
 
+    
     reporte_data = [
         {
             'clasificacion__nombre': item['clasificacion__nombre'],
             'total_datos': item['total_datos'],
-            
-            'monto_total': float(item['monto_total']) if item['monto_total'] is not None else 0.0,
-            'monto_promedio': float(item['monto_promedio']) if item['monto_promedio'] is not None else 0.0,
+            'monto_total': float(item['monto_total']) if item['monto_total'] else 0.0,
+            'monto_promedio': float(item['monto_promedio']) if item['monto_promedio'] else 0.0,
         }
-        for item in reporte_data
+        for item in reporte_data_qs
     ]
 
     clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
@@ -1020,6 +1019,7 @@ def vista_reportes(request):
     }
     
     return render(request, 'reportes.html', context)
+
 
 
 @login_required
