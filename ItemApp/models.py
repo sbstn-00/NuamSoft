@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# --- TUS MODELOS ORIGINALES (NO TOCADOS) ---
+
 
 class RegistroNUAM(models.Model):
     nombre_completo = models.CharField(max_length=255)
@@ -11,14 +11,7 @@ class RegistroNUAM(models.Model):
         ('chile', 'Chile'),
         ('colombia', 'Colombia'),
         ('peru', 'Perú'),
-        ('argentina', 'Argentina'),
-        ('mexico', 'México'),
-        ('brasil', 'Brasil'),
-        ('ecuador', 'Ecuador'),
-        ('venezuela', 'Venezuela'),
-        ('uruguay', 'Uruguay'),
-        ('paraguay', 'Paraguay'),
-        ('bolivia', 'Bolivia'),
+
     ]
     pais = models.CharField(max_length=100, choices=PAISES_CHOICES)
     

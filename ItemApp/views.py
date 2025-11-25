@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test 
 
-# --- IMPORTACIONES ACTUALIZADAS ---
+
 from .forms import (
     RegistroNUAMForm, 
     ClasificacionForm, 
@@ -846,37 +846,37 @@ def vista_listar_datos_tributarios(request):
 def vista_eliminar_dato_tributario(request, pk):
     dato = get_object_or_404(DatoTributario, pk=pk)
     
-    # Por defecto, el usuario no puede borrar
+    
     puede_borrar = False
     
-    # 1. ¿Es Admin? Si es admin, puede borrar cualquier cosa.
+    
     if request.user.is_staff:
         puede_borrar = True
         
-    # 2. Si NO es Admin, verificamos si es el dueño Y si es reciente
+    
     elif dato.creado_por == request.user:
-        # Definimos "reciente" como 10 minutos
+        
         tiempo_limite = timezone.now() - timedelta(minutes=10)
         
-        # Comprobamos si el dato fue creado DESPUÉS del tiempo límite
-        # (es decir, dentro de los últimos 10 minutos)
+        
+       
         if dato.creado_en > tiempo_limite:
             puede_borrar = True
         else:
-            # Es el dueño, pero ya pasó el tiempo
+           
             messages.error(request, 'No puedes eliminar este dato. Solo tienes 10 minutos de gracia para corregir errores.')
     
     else:
-        # No es admin y no es el dueño
+       
         messages.error(request, 'No tienes permiso para eliminar este dato.')
 
-    # --- Fin de la lógica de permisos ---
+    
 
     if not puede_borrar:
-        # Si ninguna regla le dio permiso, lo redirigimos
+        
         return redirect('listar_datos_tributarios')
 
-    # Si llegó hasta aquí, TIENE PERMISO.
+    
     if request.method == 'POST':
         nombre = dato.nombre_dato
         dato.delete()
@@ -963,19 +963,18 @@ def vista_panel_administracion(request):
     return render(request, 'admin_panel.html', context)
 
 
+
+
 @login_required
 def vista_reportes(request):
     """Genera reportes de montos tributarios agrupados por clasificación y filtrados por fecha."""
     
-    
     clasificacion_id = request.GET.get('clasificacion')
     fecha_inicio_str = request.GET.get('fecha_inicio')
-   
-    
     
     datos_query = DatoTributario.objects.all().select_related('clasificacion')
     
-    
+
     if clasificacion_id:
         try:
             datos_query = datos_query.filter(clasificacion_id=int(clasificacion_id))
@@ -983,27 +982,35 @@ def vista_reportes(request):
             messages.error(request, 'ID de clasificación inválido.')
             return redirect('reportes')
     
-   
+
     fecha_inicio_seleccionada = None
     if fecha_inicio_str:
         try:
-            
             fecha_inicio_seleccionada = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
-            
             datos_query = datos_query.filter(fecha_dato__gte=fecha_inicio_seleccionada)
         except ValueError:
             messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
 
-    
+
     reporte_data = datos_query.values('clasificacion__nombre').annotate(
         total_datos=Count('id'),
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto')
     ).order_by('-monto_total')
     
-   
+
+    reporte_data = [
+        {
+            'clasificacion__nombre': item['clasificacion__nombre'],
+            'total_datos': item['total_datos'],
+            
+            'monto_total': float(item['monto_total']) if item['monto_total'] is not None else 0.0,
+            'monto_promedio': float(item['monto_promedio']) if item['monto_promedio'] is not None else 0.0,
+        }
+        for item in reporte_data
+    ]
+
     clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
-    
     
     context = {
         'reporte_data': reporte_data,

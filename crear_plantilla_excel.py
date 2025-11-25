@@ -17,7 +17,7 @@ except ImportError:
 def crear_plantilla_excel():
     """Crea un archivo Excel de plantilla con el formato correcto"""
     
-    # Datos de ejemplo
+   
     datos_ejemplo = {
         'Nombre': [
             'Inversión Renta Fija Banco Estado',
@@ -69,23 +69,23 @@ def crear_plantilla_excel():
         ]
     }
     
-    # Crear DataFrame
+   
     df = pd.DataFrame(datos_ejemplo)
     
-    # Nombre del archivo
+    
     nombre_archivo = 'plantilla_carga_datos.xlsx'
     
-    # Crear el archivo Excel
+   
     with pd.ExcelWriter(nombre_archivo, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Datos')
         
-        # Obtener la hoja de trabajo
+       
         worksheet = writer.sheets['Datos']
         
-        # Formatear el archivo si openpyxl está disponible
+       
         if OPENPYXL_AVAILABLE:
             try:
-                # Formatear el encabezado
+                
                 header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
                 header_font = Font(bold=True, color="FFFFFF", size=12)
                 
@@ -95,7 +95,7 @@ def crear_plantilla_excel():
                     cell.font = header_font
                     cell.alignment = Alignment(horizontal="center", vertical="center")
                 
-                # Ajustar el ancho de las columnas
+            
                 for idx, col in enumerate(df.columns, 1):
                     max_length = max(
                         df[col].astype(str).map(len).max(),
@@ -104,21 +104,21 @@ def crear_plantilla_excel():
                     col_letter = get_column_letter(idx)
                     worksheet.column_dimensions[col_letter].width = min(max_length, 50)
                 
-                # Formatear las celdas de datos
+                
                 for row in range(2, len(df) + 2):
-                    # Formato para columna de Monto (columna B)
+                   
                     monto_cell = worksheet.cell(row=row, column=2)
                     monto_cell.number_format = '#,##0.00'
                     
-                    # Formato para columna de Factor (columna C)
+                   
                     factor_cell = worksheet.cell(row=row, column=3)
                     factor_cell.number_format = '0.00'
                     
-                    # Formato para columna de Fecha (columna D)
+                 
                     fecha_cell = worksheet.cell(row=row, column=4)
                     fecha_cell.number_format = 'YYYY-MM-DD'
                 
-                # Agregar una hoja de instrucciones
+               
                 instrucciones = writer.book.create_sheet("Instrucciones")
                 
                 instrucciones_texto = [
@@ -159,7 +159,7 @@ def crear_plantilla_excel():
                         cell = instrucciones.cell(row=row_num, column=col_num)
                         cell.value = cell_value
                         
-                        # Formatear el título
+                        
                         if row_num == 1:
                             cell.font = Font(bold=True, size=14, color="366092")
                             cell.alignment = Alignment(horizontal="left", vertical="center")
@@ -167,7 +167,7 @@ def crear_plantilla_excel():
                             cell.font = Font(bold=True, size=11)
                             cell.fill = PatternFill(start_color="E7E6E6", end_color="E7E6E6", fill_type="solid")
                 
-                # Ajustar ancho de columna en hoja de instrucciones
+                
                 instrucciones.column_dimensions['A'].width = 80
             except Exception as e:
                 print(f"[ADVERTENCIA] No se pudo aplicar formato avanzado: {e}")
