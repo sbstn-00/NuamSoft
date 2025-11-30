@@ -71,6 +71,9 @@ class DatoTributario(models.Model):
     )
     creado_en = models.DateTimeField(auto_now_add=True)
     
+    
+    desbloqueado = models.BooleanField(default=False, help_text="Si es True, el usuario puede borrarlo fuera de tiempo")
+
     def __str__(self):
         return f"{self.nombre_dato} ({self.clasificacion.nombre})"
 
@@ -81,6 +84,11 @@ class DatoTributario(models.Model):
     @property
     def tiempo_edicion_expirado(self):
         """Retorna True si han pasado más de 10 minutos desde la creación"""
+    
+        if self.desbloqueado:
+            return False
+            
+       
         if not self.creado_en:
             return True
         tiempo_limite = self.creado_en + timedelta(minutes=10)
