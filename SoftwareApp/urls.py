@@ -39,7 +39,7 @@ urlpatterns = [
     path('calificaciones/modificar/<int:id>/', item_views.vista_gestionar_calificacion, name='modificar_calificacion'),
     path('calificaciones/eliminar/<int:id>/', item_views.vista_eliminar_calificacion, name='eliminar_calificacion_tributaria'),
     path('calificaciones/carga-masiva/', item_views.vista_carga_masiva_calificaciones, name='carga_masiva_calificaciones'),
-   
+    path('admin-panel/atender/<int:pk>/', item_views.vista_atender_solicitud, name='atender_solicitud'),
     
     path('logout/', item_views.vista_logout, name='logout'),
 ]

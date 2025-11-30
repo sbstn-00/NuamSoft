@@ -10,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 import pandas as pd
 import io
 import json
+import gc 
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test 
@@ -588,22 +589,32 @@ def vista_carga_datos(request):
                     print(f"   - {tipo}: '{info['nombre_original']}' (índice: {info['indice']})")
                 print("=" * 60)
                 
+                
+                data_records = df.to_dict('records')
+                del df
+                gc.collect() 
+                
+
                 registros_creados = 0
                 registros_actualizados = 0
                 errores = []
                 advertencias = []
                 
-                df = df.reset_index(drop=True)
-                
-                if len(df) == 0:
+                if not data_records:
                     messages.error(request, 
                         'Después de procesar el archivo, no quedan filas válidas para cargar. '
                         'Verifique que el archivo tenga datos en las filas.')
                     return render(request, 'carga_datos.html', {'form': form})
                 
                 filas_procesadas = 0
-                for index, fila in df.iterrows():
+                
+                
+                for index, fila_dict in enumerate(data_records):
                     filas_procesadas += 1
+                    
+                    
+                    fila = pd.Series(fila_dict)
+
                     try:
                         datos, errores_fila = validar_fila_datos(fila, columnas_detectadas, index)
                         
@@ -879,6 +890,10 @@ def vista_panel_administracion(request):
         messages.error(request, 'No tienes permisos para acceder al panel de administración.')
         return redirect('inicio')
     
+  
+    solicitudes_pendientes = SolicitudEdicion.objects.filter(revisado=False).select_related('solicitante', 'dato').order_by('-fecha_solicitud')
+ 
+    
     total_usuarios = User.objects.count()
     total_staff = User.objects.filter(is_staff=True).count()
     total_superusuarios = User.objects.filter(is_superuser=True).count()
@@ -919,6 +934,7 @@ def vista_panel_administracion(request):
     total_usuarios_regulares = total_usuarios - total_staff
     
     context = {
+        'solicitudes_pendientes': solicitudes_pendientes, 
         'total_usuarios': total_usuarios,
         'total_staff': total_staff,
         'total_superusuarios': total_superusuarios,
@@ -949,6 +965,17 @@ def vista_panel_administracion(request):
     return render(request, 'admin_panel.html', context)
 
 
+@login_required
+def vista_atender_solicitud(request, pk):
+    if not request.user.is_staff:
+        return redirect('inicio')
+        
+    solicitud = get_object_or_404(SolicitudEdicion, pk=pk)
+    solicitud.revisado = True
+    solicitud.save()
+    
+    messages.success(request, f"Solicitud de {solicitud.solicitante.username} marcada como atendida.")
+    return redirect('admin_panel')
 
 
 @login_required
@@ -1135,10 +1162,20 @@ def vista_carga_masiva_calificaciones(request):
                 
                 df.columns = df.columns.str.strip().str.upper()
                 
+                # --- OPTIMIZACIÓN DE MEMORIA RAM ---
+                # Guardamos columnas necesarias para el loop interno
+                columnas_disponibles = list(df.columns)
+                
+                # Convertimos a dict y borramos DF
+                data_records = df.to_dict('records')
+                del df
+                gc.collect()
+                # -----------------------------------
+                
                 registros_procesados = 0
                 
-                for index, row in df.iterrows():
-                    
+                # Iteramos sobre la lista de dicts
+                for index, row in enumerate(data_records):
                     
                     try:
                         
@@ -1168,7 +1205,8 @@ def vista_carga_masiva_calificaciones(request):
                             ]
                             
                             val = 0
-                            for col in df.columns:
+                            # Usamos la lista de columnas guardada anteriormente
+                            for col in columnas_disponibles:
                                 
                                 if any(col.startswith(k) for k in keys_to_check):
                                     val = row[col]
