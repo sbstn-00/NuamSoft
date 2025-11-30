@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-
+from django.utils import timezone
+from datetime import timedelta
 
 class RegistroNUAM(models.Model):
     nombre_completo = models.CharField(max_length=255)
@@ -11,7 +11,6 @@ class RegistroNUAM(models.Model):
         ('chile', 'Chile'),
         ('colombia', 'Colombia'),
         ('peru', 'Perú'),
-
     ]
     pais = models.CharField(max_length=100, choices=PAISES_CHOICES)
     
@@ -78,7 +77,14 @@ class DatoTributario(models.Model):
     class Meta:
         verbose_name = "Dato Tributario"
         verbose_name_plural = "Datos Tributarios"
-
+    
+    @property
+    def tiempo_edicion_expirado(self):
+        """Retorna True si han pasado más de 10 minutos desde la creación"""
+        if not self.creado_en:
+            return True
+        tiempo_limite = self.creado_en + timedelta(minutes=10)
+        return timezone.now() > tiempo_limite
 
 
 class CalificacionTributaria(models.Model):
@@ -100,30 +106,24 @@ class CalificacionTributaria(models.Model):
 
     valor_historico = models.DecimalField(max_digits=20, decimal_places=8, default=0)
 
-
-    
-    
+    # Factores (F08 - F37)
     factor_08 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F08 No Constitutiva Renta")
     factor_09 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F09 Impto 1ra Cat Afecto")
     factor_10 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F10 Impto Tasa Adic Exento")
     
-   
     factor_11 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F11 Incremento Impto 1ra Cat")
     factor_12 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F12 Impto 1ra Cat Exento")
     factor_13 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F13 Impto 1ra Cat Afecto Sin Dev")
-
   
     factor_14 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F14 Impto 1ra Cat Exento Sin Dev")
     factor_15 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F15 Creditos Impuestos Externos")
     factor_16 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F16 No Constitutiva Acogido Impto")
 
-   
     factor_17 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F17 No Const. Dev Capital Art.17")
     factor_18 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F18 Rentas Exentas Impto GC")
     factor_19 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F19 Ingreso no Constitutivo")
     factor_19A = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F19A Ingreso no Const. Renta")
 
-    
     factor_20 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F20 Sin Derecho a Dev")
     factor_21 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F21 Con Derecho a Dev")
     factor_22 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F22 Sin Derecho a Dev")
@@ -147,7 +147,6 @@ class CalificacionTributaria(models.Model):
     factor_35 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F35 Tasa Efectiva Cred FUT")
     factor_36 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F36 Tasa Efectiva Cred FUNT")
     factor_37 = models.DecimalField(max_digits=18, decimal_places=8, default=0, verbose_name="F37 Dev Capital Art 17 num 7")
-
     
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
@@ -158,3 +157,14 @@ class CalificacionTributaria(models.Model):
     class Meta:
         verbose_name = "Calificación Tributaria (UI)"
         verbose_name_plural = "Calificaciones Tributarias (UI)"
+
+
+class SolicitudEdicion(models.Model):
+    dato = models.ForeignKey(DatoTributario, on_delete=models.CASCADE)
+    solicitante = models.ForeignKey(User, on_delete=models.CASCADE)
+    mensaje = models.TextField(default="Solicito desbloqueo para corregir un error.")
+    fecha_solicitud = models.DateTimeField(auto_now_add=True)
+    revisado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Solicitud de {self.solicitante.username} - {self.dato.nombre_dato}"

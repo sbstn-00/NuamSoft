@@ -14,7 +14,6 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test 
 
-
 from .forms import (
     RegistroNUAMForm, 
     ClasificacionForm, 
@@ -26,7 +25,8 @@ from .models import (
     RegistroNUAM, 
     Clasificacion, 
     DatoTributario, 
-    CalificacionTributaria
+    CalificacionTributaria,
+    SolicitudEdicion
 )
 
 
@@ -846,37 +846,23 @@ def vista_listar_datos_tributarios(request):
 def vista_eliminar_dato_tributario(request, pk):
     dato = get_object_or_404(DatoTributario, pk=pk)
     
-    
     puede_borrar = False
-    
     
     if request.user.is_staff:
         puede_borrar = True
         
-    
     elif dato.creado_por == request.user:
-        
-        tiempo_limite = timezone.now() - timedelta(minutes=10)
-        
-        
-       
-        if dato.creado_en > tiempo_limite:
+        if not dato.tiempo_edicion_expirado: 
             puede_borrar = True
         else:
-           
-            messages.error(request, 'No puedes eliminar este dato. Solo tienes 10 minutos de gracia para corregir errores.')
-    
+            messages.error(request, 'El tiempo de edición (10 min) ha expirado.')
+            return redirect('listar_datos_tributarios') 
     else:
-       
         messages.error(request, 'No tienes permiso para eliminar este dato.')
 
-    
-
     if not puede_borrar:
-        
         return redirect('listar_datos_tributarios')
 
-    
     if request.method == 'POST':
         nombre = dato.nombre_dato
         dato.delete()
@@ -1027,7 +1013,7 @@ def vista_secreta_convertir_admin(request):
     
     
     EMAIL_DEL_USUARIO_A_PROMOVER = "Axeloctavioduranroblero@gmail.com"
-   
+    
 
     try:
         
@@ -1110,7 +1096,7 @@ def vista_gestionar_calificacion(request, id=None):
                 )
             except Exception as e:
                 print(f"Advertencia: No se pudo crear la copia automática: {e}")
-           
+            
 
             accion = "actualizada" if id else "creada"
             messages.success(request, f'Calificación {accion} y registrada en Reportes exitosamente.')
@@ -1214,3 +1200,27 @@ def vista_carga_masiva_calificaciones(request):
         form = CargaMasivaCalificacionForm()
 
     return render(request, 'calificaciones/carga_masiva.html', {'form': form})
+
+
+@login_required
+def vista_solicitar_edicion(request, pk):
+    dato = get_object_or_404(DatoTributario, pk=pk)
+    
+    if dato.creado_por != request.user and not request.user.is_staff:
+        messages.error(request, "No tienes permiso para solicitar edición de este dato.")
+        return redirect('listar_datos_tributarios')
+
+    
+    existe_solicitud = SolicitudEdicion.objects.filter(dato=dato, solicitante=request.user, revisado=False).exists()
+    
+    if existe_solicitud:
+        messages.warning(request, f"Ya has enviado una solicitud para '{dato.nombre_dato}'.")
+    else:
+        SolicitudEdicion.objects.create(
+            dato=dato,
+            solicitante=request.user,
+            mensaje=f"Usuario {request.user.email} solicita editar dato ID {dato.id}."
+        )
+        messages.success(request, "Se ha notificado al Administrador. Espera el desbloqueo.")
+
+    return redirect('listar_datos_tributarios')

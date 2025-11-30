@@ -69,14 +69,26 @@
                                     <td>{{ dato.creado_en|date:"d/m/Y H:i" }}</td>
                                     <td>{{ dato.creado_por.username|default:"Sistema" }}</td>
                                     <td>
-                                        {% if user.is_staff or dato.creado_por == user %}
-                                            <a href="{% url 'eliminar_dato_tributario' dato.pk %}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este dato?');">
+                                        {% if user.is_staff %}
+                                            <a href="{% url 'eliminar_dato_tributario' dato.pk %}" class="btn btn-sm btn-danger" title="Eliminar (Admin)" onclick="return confirm('¿Estás seguro de eliminar este dato?');">
                                                 <i class="fas fa-trash"></i>
                                             </a>
+
+                                        {% elif dato.creado_por == user %}
+                                            {% if not dato.tiempo_edicion_expirado %}
+                                                <a href="{% url 'eliminar_dato_tributario' dato.pk %}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este dato?');">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'solicitar_edicion_dato' dato.pk %}" class="btn btn-sm btn-warning text-dark" title="Tiempo expirado - Solicitar al Admin">
+                                                    <i class="fas fa-lock"></i> Solicitar
+                                                </a>
+                                            {% endif %}
+
                                         {% else %}
                                             <span class="text-muted" title="No tienes permisos"><i class="fas fa-lock"></i></span>
                                         {% endif %}
-                                        </td>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

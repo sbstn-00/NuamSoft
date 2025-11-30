@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.urls import path
 from ItemApp import views as item_views
@@ -26,6 +25,9 @@ urlpatterns = [
     path('carga-datos/preview/', item_views.vista_preview_archivo, name='preview_archivo'),
     path('datos-tributarios/', item_views.vista_listar_datos_tributarios, name='listar_datos_tributarios'),
     path('datos-tributarios/eliminar/<int:pk>/', item_views.vista_eliminar_dato_tributario, name='eliminar_dato_tributario'),
+    
+    
+    path('datos-tributarios/solicitar-edicion/<int:pk>/', item_views.vista_solicitar_edicion, name='solicitar_edicion_dato'),
     
     
     path('admin-panel/', item_views.vista_panel_administracion, name='admin_panel'),
