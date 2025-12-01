@@ -64,15 +64,19 @@
         
         <div class="col-lg-12">
             <div class="card shadow-sm border-0">
+                {# CORRECCIÓN DE VISIBILIDAD: Fondo oscuro y letras blancas #}
                 <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Consolidación de Montos por Calificación</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2 text-info"></i>Consolidación de Montos por Calificación</h5>
                 </div>
                 <div class="card-body">
 
                     {% if reporte_data %}
 
-                        <div class="mb-5" style="height: 300px;">
-                            <canvas id="chartReporte"></canvas>
+                        {# CORRECCIÓN DE ALTURA: Contenedor con altura definida #}
+                        <div class="mb-5">
+                            <div style="width: 100%; height: 350px;">
+                                <canvas id="chartReporte"></canvas>
+                            </div>
                         </div>
 
                         <h6 class="fw-bold mt-4 mb-3"><i class="fas fa-table me-1"></i>Detalle Agrupado:</h6>
@@ -104,6 +108,7 @@
                         <div class="alert alert-info text-center p-4">
                             <i class="fas fa-search fa-3x text-info mb-3"></i>
                             <h5>Aplica los filtros para generar tu primer reporte.</h5>
+                            <p class="mb-0">Asegúrate de que existan datos tributarios con las clasificaciones seleccionadas.</p>
                         </div>
                     {% endif %}
 
@@ -114,10 +119,8 @@
     </div>
 </div>
 
-
-<script id="reporteDataJSON" type="application/json">
-    {{ reporte_data|json_script:"reporteDataJSON" }}
-</script>
+{# CORRECCIÓN JSON: Uso correcto de json_script para evitar errores de parseo #}
+{{ reporte_data|json_script:"reporteDataJSON" }}
 
 {% endblock %}
 
@@ -126,47 +129,97 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    try {
-        // Lectura correcta del JSON escapado por Django
-        const rawData = JSON.parse(
-            document.getElementById("reporteDataJSON").textContent
-        );
+    try {
+        // 1. Lectura segura del JSON generado por Django
+        const rawDataElement = document.getElementById("reporteDataJSON");
+        if (!rawDataElement) {
+             console.error("Elemento JSON no encontrado.");
+             return;
+        }
 
-        const labels = rawData.map(item => item.clasificacion__nombre);
-        // Asegurar que montos sea un número
-        const montos = rawData.map(item => parseFloat(item.monto_total) || 0);
+        const rawData = JSON.parse(rawDataElement.textContent);
 
-        if (labels.length === 0) return;
+        // 2. Limpieza, validación, y mapeo de datos
+        const reporteData = rawData
+            .map(item => ({
+                // Aseguramos el nombre como string
+                nombre: String(item.clasificacion__nombre), 
+                // Aseguramos que el monto sea un número flotante (si es null, será 0)
+                monto_total: parseFloat(item.monto_total) || 0
+            }))
+            .filter(item => item.monto_total > 0); // Solo graficar datos con monto > 0
+
         
-        // El resto de tu código de gráfico aquí...
+        if (reporteData.length === 0) {
+             console.log("No hay datos con monto > 0 para graficar.");
+             return;
+        }
+
+        const labels = reporteData.map(item => item.nombre);
+        const montos = reporteData.map(item => item.monto_total);
+
+        // Generar colores de forma simple para la gráfica
+        const generateColors = (num) => {
+            const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1'];
+            return Array.from({length: num}, (_, i) => colors[i % colors.length]);
+        };
         
-        const ctx = document.getElementById('chartReporte').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Monto Total ($)',
-                    data: montos,
-                    backgroundColor: '#0d6efd'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                // Añadir un título para hacer el gráfico más legible
-                plugins: { 
-                    title: { display: true, text: 'Consolidación de Montos por Calificación' } 
-                },
+        const backgroundColors = generateColors(labels.length);
+
+
+        // 3. Inicialización del Gráfico
+        const ctx = document.getElementById('chartReporte');
+        
+        if (!ctx || !ctx.getContext) {
+            console.error("Elemento canvas 'chartReporte' no es válido.");
+            return;
+        }
+
+        new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Monto Total ($)',
+                    data: montos,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true }
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Monto Total'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString('es-CL');
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monto Tributario Consolidado por Calificación',
+                        font: { size: 16 }
+                    }
                 }
-            }
-        });
+            }
+        });
 
-    } catch (e) {
-        console.error("Error cargando JSON o gráfico:", e);
-    }
+    } catch (e) {
+        console.error("ERROR CRÍTICO AL DIBUJAR EL GRÁFICO:", e);
+    }
 });
 </script>
 {% endblock %}
