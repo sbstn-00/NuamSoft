@@ -1000,7 +1000,7 @@ def vista_atender_solicitud(request, pk):
     return redirect('admin_panel')
 
 
-# Coloca esta vista después de vista_panel_administracion en views.py
+# ItemApp/views.py
 
 @login_required
 def vista_reportes(request):
@@ -1030,13 +1030,17 @@ def vista_reportes(request):
         except ValueError:
             messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
 
-    reporte_data = datos_query.values('clasificacion__nombre').annotate(
+    reporte_data_qs = datos_query.values('clasificacion__nombre').annotate(
         total_datos=Count('id'),
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto')
     ).order_by('-monto_total')
-    
-    # Ya no es necesario convertir a lista ni forzar float() aquí
+
+    # --- CORRECCIÓN CLAVE ---
+    # Convertir el QuerySet de agregación a una lista de diccionarios.
+    # Esto resuelve el error "Object of type QuerySet is not JSON serializable".
+    reporte_data = list(reporte_data_qs) 
+    # -------------------------
     
     clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
     
@@ -1048,6 +1052,7 @@ def vista_reportes(request):
     }
     
     return render(request, 'reportes.html', context)
+
 
 
 
