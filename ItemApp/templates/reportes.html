@@ -126,36 +126,47 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    try {
-        const rawData = JSON.parse(
-            document.getElementById("reporteDataJSON").textContent
-        );
+    try {
+        // Lectura correcta del JSON escapado por Django
+        const rawData = JSON.parse(
+            document.getElementById("reporteDataJSON").textContent
+        );
 
-        const labels = rawData.map(item => item.clasificacion__nombre);
-        const montos = rawData.map(item => item.monto_total);
+        const labels = rawData.map(item => item.clasificacion__nombre);
+        // Asegurar que montos sea un número
+        const montos = rawData.map(item => parseFloat(item.monto_total) || 0);
 
-        if (labels.length === 0) return;
+        if (labels.length === 0) return;
+        
+        // El resto de tu código de gráfico aquí...
+        
+        const ctx = document.getElementById('chartReporte').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Monto Total ($)',
+                    data: montos,
+                    backgroundColor: '#0d6efd'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                // Añadir un título para hacer el gráfico más legible
+                plugins: { 
+                    title: { display: true, text: 'Consolidación de Montos por Calificación' } 
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
 
-        const ctx = document.getElementById('chartReporte').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Monto Total ($)',
-                    data: montos,
-                    backgroundColor: '#0d6efd'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-            }
-        });
-
-    } catch (e) {
-        console.error("Error cargando JSON:", e);
-    }
+    } catch (e) {
+        console.error("Error cargando JSON o gráfico:", e);
+    }
 });
 </script>
 {% endblock %}
