@@ -1000,12 +1000,18 @@ def vista_atender_solicitud(request, pk):
     return redirect('admin_panel')
 
 
+# Coloca esta vista después de vista_panel_administracion en views.py
+
 @login_required
 def vista_reportes(request):
     """Genera reportes de montos tributarios agrupados por clasificación y filtrados por fecha."""
     
     clasificacion_id = request.GET.get('clasificacion')
     fecha_inicio_str = request.GET.get('fecha_inicio')
+    
+    # Asegúrate de que datetime y Count, Sum, Avg estén importados al inicio
+    from datetime import datetime 
+    from django.db.models import Count, Sum, Avg 
     
     datos_query = DatoTributario.objects.all().select_related('clasificacion')
 
@@ -1024,22 +1030,14 @@ def vista_reportes(request):
         except ValueError:
             messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
 
-    reporte_data_qs = datos_query.values('clasificacion__nombre').annotate(
+    reporte_data = datos_query.values('clasificacion__nombre').annotate(
         total_datos=Count('id'),
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto')
     ).order_by('-monto_total')
-
-    reporte_data = [
-        {
-            'clasificacion__nombre': item['clasificacion__nombre'],
-            'total_datos': item['total_datos'],
-            'monto_total': float(item['monto_total']) if item['monto_total'] else 0.0,
-            'monto_promedio': float(item['monto_promedio']) if item['monto_promedio'] else 0.0,
-        }
-        for item in reporte_data_qs
-    ]
-
+    
+    # Ya no es necesario convertir a lista ni forzar float() aquí
+    
     clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
     
     context = {
@@ -1050,6 +1048,7 @@ def vista_reportes(request):
     }
     
     return render(request, 'reportes.html', context)
+
 
 
 @login_required
