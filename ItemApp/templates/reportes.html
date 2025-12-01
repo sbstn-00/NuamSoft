@@ -65,14 +65,16 @@
         <div class="col-lg-12">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Consolidación de Montos por Calificación</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2 text-info"></i>Consolidación de Montos por Calificación</h5>
                 </div>
                 <div class="card-body">
 
                     {% if reporte_data %}
 
-                        <div class="mb-5" style="height: 300px;">
-                            <canvas id="chartReporte"></canvas>
+                        <div class="mb-5">
+                            <div style="width: 100%; height: 350px;">
+                                <canvas id="chartReporte"></canvas>
+                            </div>
                         </div>
 
                         <h6 class="fw-bold mt-4 mb-3"><i class="fas fa-table me-1"></i>Detalle Agrupado:</h6>
@@ -92,6 +94,7 @@
                                         <tr>
                                             <td><span class="badge bg-primary">{{ item.clasificacion__nombre }}</span></td>
                                             <td class="text-end fw-semibold">{{ item.total_datos }}</td>
+                                            {# Usar floatformat para la presentación en la tabla #}
                                             <td class="text-end"><strong>${{ item.monto_total|floatformat:2 }}</strong></td>
                                             <td class="text-end">${{ item.monto_promedio|floatformat:2 }}</td>
                                         </tr>
@@ -104,6 +107,7 @@
                         <div class="alert alert-info text-center p-4">
                             <i class="fas fa-search fa-3x text-info mb-3"></i>
                             <h5>Aplica los filtros para generar tu primer reporte.</h5>
+                            <p class="mb-0">Asegúrate de que existan datos tributarios con las clasificaciones seleccionadas.</p>
                         </div>
                     {% endif %}
 
@@ -114,10 +118,8 @@
     </div>
 </div>
 
-
-<script id="reporteDataJSON" type="application/json">
-    {{ reporte_data|json_script:"reporteDataJSON" }}
-</script>
+{# CORRECTO: Usamos json_script para la serialización segura del QuerySet #}
+{{ reporte_data|json_script:"reporteDataJSON" }}
 
 {% endblock %}
 
@@ -127,34 +129,94 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     try {
-        const rawData = JSON.parse(
-            document.getElementById("reporteDataJSON").textContent
-        );
+        // 1. Lectura segura del JSON generado por Django
+        const rawDataElement = document.getElementById("reporteDataJSON");
+        if (!rawDataElement) {
+             console.error("Elemento JSON no encontrado.");
+             return;
+        }
 
-        const labels = rawData.map(item => item.clasificacion__nombre);
-        const montos = rawData.map(item => item.monto_total);
+        const rawData = JSON.parse(rawDataElement.textContent);
 
-        if (labels.length === 0) return;
+        // 2. Limpieza, validación, y mapeo de datos
+        const reporteData = rawData
+            .map(item => ({
+                nombre: String(item.clasificacion__nombre), 
+                // Usar parseFloat() para asegurar que los Decimales de Django se lean como números
+                monto_total: parseFloat(item.monto_total) || 0
+            }))
+            .filter(item => item.monto_total > 0); 
 
-        const ctx = document.getElementById('chartReporte').getContext('2d');
-        new Chart(ctx, {
+        
+        if (reporteData.length === 0) {
+             console.log("No hay datos con monto > 0 para graficar.");
+             return;
+        }
+
+        const labels = reporteData.map(item => item.nombre);
+        const montos = reporteData.map(item => item.monto_total);
+
+        // Generar colores
+        const generateColors = (num) => {
+            const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1'];
+            return Array.from({length: num}, (_, i) => colors[i % colors.length]);
+        };
+        
+        const backgroundColors = generateColors(labels.length);
+
+
+        // 3. Inicialización del Gráfico
+        const ctx = document.getElementById('chartReporte');
+        
+        if (!ctx || !ctx.getContext) {
+            console.error("Elemento canvas 'chartReporte' no es válido.");
+            return;
+        }
+
+        new Chart(ctx.getContext('2d'), {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
                     label: 'Monto Total ($)',
                     data: montos,
-                    backgroundColor: '#0d6efd'
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors,
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Monto Total'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString('es-CL');
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monto Tributario Consolidado por Calificación',
+                        font: { size: 16 }
+                    }
+                }
             }
         });
 
     } catch (e) {
-        console.error("Error cargando JSON:", e);
+        console.error("ERROR CRÍTICO AL DIBUJAR EL GRÁFICO:", e);
     }
 });
 </script>

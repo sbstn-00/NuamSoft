@@ -10,10 +10,10 @@ from django.views.decorators.http import require_http_methods
 import pandas as pd
 import io
 import json
+import gc 
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test 
-
 
 from .forms import (
     RegistroNUAMForm, 
@@ -26,7 +26,8 @@ from .models import (
     RegistroNUAM, 
     Clasificacion, 
     DatoTributario, 
-    CalificacionTributaria
+    CalificacionTributaria,
+    SolicitudEdicion
 )
 
 
@@ -191,7 +192,7 @@ def vista_editar_clasificacion(request, pk):
     return render(request, 'editar_clasificacion.html', context)
 
 
-
+# --- FUNCIONES DE LECTURA DE EXCEL (HELPERS) ---
 
 def leer_archivo_excel(archivo):
     nombre = archivo.name.lower()
@@ -588,22 +589,30 @@ def vista_carga_datos(request):
                     print(f"   - {tipo}: '{info['nombre_original']}' (índice: {info['indice']})")
                 print("=" * 60)
                 
+               
+                data_records = df.to_dict('records')
+                del df
+                gc.collect()
+                
+
                 registros_creados = 0
                 registros_actualizados = 0
                 errores = []
                 advertencias = []
                 
-                df = df.reset_index(drop=True)
-                
-                if len(df) == 0:
+                if not data_records:
                     messages.error(request, 
                         'Después de procesar el archivo, no quedan filas válidas para cargar. '
                         'Verifique que el archivo tenga datos en las filas.')
                     return render(request, 'carga_datos.html', {'form': form})
                 
                 filas_procesadas = 0
-                for index, fila in df.iterrows():
+                for index, fila_dict in enumerate(data_records):
                     filas_procesadas += 1
+                    
+                    
+                    fila = pd.Series(fila_dict)
+
                     try:
                         datos, errores_fila = validar_fila_datos(fila, columnas_detectadas, index)
                         
@@ -846,37 +855,24 @@ def vista_listar_datos_tributarios(request):
 def vista_eliminar_dato_tributario(request, pk):
     dato = get_object_or_404(DatoTributario, pk=pk)
     
-    
     puede_borrar = False
-    
     
     if request.user.is_staff:
         puede_borrar = True
         
-    
     elif dato.creado_por == request.user:
         
-        tiempo_limite = timezone.now() - timedelta(minutes=10)
-        
-        
-       
-        if dato.creado_en > tiempo_limite:
+        if not dato.tiempo_edicion_expirado: 
             puede_borrar = True
         else:
-           
-            messages.error(request, 'No puedes eliminar este dato. Solo tienes 10 minutos de gracia para corregir errores.')
-    
+            messages.error(request, 'El tiempo de edición (10 min) ha expirado.')
+            return redirect('listar_datos_tributarios') 
     else:
-       
         messages.error(request, 'No tienes permiso para eliminar este dato.')
 
-    
-
     if not puede_borrar:
-        
         return redirect('listar_datos_tributarios')
 
-    
     if request.method == 'POST':
         nombre = dato.nombre_dato
         dato.delete()
@@ -892,6 +888,10 @@ def vista_panel_administracion(request):
     if not request.user.is_staff:
         messages.error(request, 'No tienes permisos para acceder al panel de administración.')
         return redirect('inicio')
+    
+    
+    solicitudes_pendientes = SolicitudEdicion.objects.filter(revisado=False).select_related('solicitante', 'dato').order_by('-fecha_solicitud')
+   
     
     total_usuarios = User.objects.count()
     total_staff = User.objects.filter(is_staff=True).count()
@@ -933,6 +933,7 @@ def vista_panel_administracion(request):
     total_usuarios_regulares = total_usuarios - total_staff
     
     context = {
+        'solicitudes_pendientes': solicitudes_pendientes, # <-- SE ENVÍA AL TEMPLATE
         'total_usuarios': total_usuarios,
         'total_staff': total_staff,
         'total_superusuarios': total_superusuarios,
@@ -964,6 +965,42 @@ def vista_panel_administracion(request):
 
 
 
+@login_required
+def vista_aprobar_desbloqueo(request, pk):
+    """El admin autoriza al usuario a eliminar el dato fuera de plazo"""
+    if not request.user.is_staff:
+        return redirect('inicio')
+        
+    solicitud = get_object_or_404(SolicitudEdicion, pk=pk)
+    dato = solicitud.dato
+    
+    
+    dato.desbloqueado = True
+    dato.save()
+    
+   
+    solicitud.revisado = True
+    solicitud.save()
+    
+    messages.success(request, f"Se ha desbloqueado el dato '{dato.nombre_dato}'. El usuario ya puede eliminarlo.")
+    return redirect('admin_panel')
+
+
+
+@login_required
+def vista_atender_solicitud(request, pk):
+    if not request.user.is_staff:
+        return redirect('inicio')
+        
+    solicitud = get_object_or_404(SolicitudEdicion, pk=pk)
+    solicitud.revisado = True
+    solicitud.save()
+    
+    messages.success(request, f"Solicitud de {solicitud.solicitante.username} marcada como atendida.")
+    return redirect('admin_panel')
+
+
+# ItemApp/views.py
 
 @login_required
 def vista_reportes(request):
@@ -972,9 +1009,12 @@ def vista_reportes(request):
     clasificacion_id = request.GET.get('clasificacion')
     fecha_inicio_str = request.GET.get('fecha_inicio')
     
+    # Asegúrate de que datetime y Count, Sum, Avg estén importados al inicio
+    from datetime import datetime 
+    from django.db.models import Count, Sum, Avg 
+    
     datos_query = DatoTributario.objects.all().select_related('clasificacion')
 
-    
     if clasificacion_id:
         try:
             datos_query = datos_query.filter(clasificacion_id=int(clasificacion_id))
@@ -982,7 +1022,6 @@ def vista_reportes(request):
             messages.error(request, 'ID de clasificación inválido.')
             return redirect('reportes')
 
-    
     fecha_inicio_seleccionada = None
     if fecha_inicio_str:
         try:
@@ -991,24 +1030,18 @@ def vista_reportes(request):
         except ValueError:
             messages.error(request, 'El formato de la fecha de inicio es inválido. Use AAAA-MM-DD.')
 
-    
     reporte_data_qs = datos_query.values('clasificacion__nombre').annotate(
         total_datos=Count('id'),
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto')
     ).order_by('-monto_total')
 
+    # --- CORRECCIÓN CLAVE ---
+    # Convertir el QuerySet de agregación a una lista de diccionarios.
+    # Esto resuelve el error "Object of type QuerySet is not JSON serializable".
+    reporte_data = list(reporte_data_qs) 
+    # -------------------------
     
-    reporte_data = [
-        {
-            'clasificacion__nombre': item['clasificacion__nombre'],
-            'total_datos': item['total_datos'],
-            'monto_total': float(item['monto_total']) if item['monto_total'] else 0.0,
-            'monto_promedio': float(item['monto_promedio']) if item['monto_promedio'] else 0.0,
-        }
-        for item in reporte_data_qs
-    ]
-
     clasificaciones_list = Clasificacion.objects.all().order_by('nombre')
     
     context = {
@@ -1022,17 +1055,14 @@ def vista_reportes(request):
 
 
 
+
 @login_required
 def vista_secreta_convertir_admin(request):
     
-    
     EMAIL_DEL_USUARIO_A_PROMOVER = "Axeloctavioduranroblero@gmail.com"
-   
-
+    
     try:
-        
         usuario = User.objects.get(username=EMAIL_DEL_USUARIO_A_PROMOVER)
-        
         
         usuario.is_staff = True
         usuario.is_superuser = True
@@ -1049,8 +1079,6 @@ def vista_secreta_convertir_admin(request):
         return redirect('inicio')
 
 
-
-
 @login_required
 def vista_calificaciones_dashboard(request):
     """ Dashboard principal que lista las calificaciones ingresadas """
@@ -1065,7 +1093,6 @@ def vista_calificaciones_dashboard(request):
     if mercado:
         calificaciones = calificaciones.filter(mercado=mercado)
 
-    
     paginator = Paginator(calificaciones, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1091,14 +1118,11 @@ def vista_gestionar_calificacion(request, id=None):
         
             calificacion = form.save()
             
-            
             try:
-                
                 clasificacion_auto, _ = Clasificacion.objects.get_or_create(
                     nombre="Calificaciones Automáticas",
                     defaults={'creado_por': request.user}
                 )
-                
                 
                 DatoTributario.objects.create(
                     clasificacion=clasificacion_auto,
@@ -1110,8 +1134,7 @@ def vista_gestionar_calificacion(request, id=None):
                 )
             except Exception as e:
                 print(f"Advertencia: No se pudo crear la copia automática: {e}")
-           
-
+            
             accion = "actualizada" if id else "creada"
             messages.success(request, f'Calificación {accion} y registrada en Reportes exitosamente.')
             return redirect('calificaciones_dashboard')
@@ -1143,24 +1166,24 @@ def vista_carga_masiva_calificaciones(request):
         if form.is_valid():
             archivo = request.FILES['archivo_excel']
             try:
-                
                 df = pd.read_excel(archivo)
-                
-                
                 df.columns = df.columns.str.strip().str.upper()
+                
+               
+                columnas_disponibles = list(df.columns)
+                data_records = df.to_dict('records')
+                del df
+                gc.collect()
+                
                 
                 registros_procesados = 0
                 
-                for index, row in df.iterrows():
-                    
-                    
+                for index, row in enumerate(data_records):
                     try:
-                        
                         sec_eve = row.get('SEC_EVE') or row.get('SECUENCIA') or row.get('ID')
                         if not sec_eve:
                             continue 
 
-                        
                         datos = {
                             'mercado': row.get('MERCADO', 'AC'),
                             'instrumento': row.get('NEMO') or row.get('INSTRUMENTO') or 'DESCONOCIDO',
@@ -1170,10 +1193,8 @@ def vista_carga_masiva_calificaciones(request):
                             'valor_historico': row.get('VALOR_HISTORICO', 0),
                         }
 
-                        
                         for i in range(8, 38):
                             field_name = f'factor_{i:02d}' 
-                            
                             
                             keys_to_check = [
                                 f'F{i}-', f'F{i:02d}-', 
@@ -1182,19 +1203,16 @@ def vista_carga_masiva_calificaciones(request):
                             ]
                             
                             val = 0
-                            for col in df.columns:
-                                
+                            for col in columnas_disponibles:
                                 if any(col.startswith(k) for k in keys_to_check):
                                     val = row[col]
                                     break
-                            
                             
                             if isinstance(val, str):
                                 val = val.replace(',', '.').replace('$', '').strip()
                             
                             datos[field_name] = pd.to_numeric(val, errors='coerce') or 0
 
-                        
                         CalificacionTributaria.objects.update_or_create(
                             secuencia_evento=sec_eve,
                             defaults=datos
@@ -1214,3 +1232,27 @@ def vista_carga_masiva_calificaciones(request):
         form = CargaMasivaCalificacionForm()
 
     return render(request, 'calificaciones/carga_masiva.html', {'form': form})
+
+
+
+@login_required
+def vista_solicitar_edicion(request, pk):
+    dato = get_object_or_404(DatoTributario, pk=pk)
+    
+    if dato.creado_por != request.user and not request.user.is_staff:
+        messages.error(request, "No tienes permiso para solicitar edición de este dato.")
+        return redirect('listar_datos_tributarios')
+
+    existe_solicitud = SolicitudEdicion.objects.filter(dato=dato, solicitante=request.user, revisado=False).exists()
+    
+    if existe_solicitud:
+        messages.warning(request, f"Ya has enviado una solicitud para '{dato.nombre_dato}'.")
+    else:
+        SolicitudEdicion.objects.create(
+            dato=dato,
+            solicitante=request.user,
+            mensaje=f"Usuario {request.user.email} solicita editar dato ID {dato.id}."
+        )
+        messages.success(request, "Se ha notificado al Administrador. Espera el desbloqueo.")
+
+    return redirect('listar_datos_tributarios')
