@@ -1239,26 +1239,41 @@ def vista_carga_masiva_calificaciones(request):
 def vista_solicitar_edicion(request, pk):
     dato = get_object_or_404(DatoTributario, pk=pk)
     
+    
     if dato.creado_por != request.user and not request.user.is_staff:
         messages.error(request, "No tienes permiso para solicitar edición de este dato.")
-        return redirect('listar_datos_tributarios')
+        
+        return redirect(request.META.get('HTTP_REFERER', 'listar_datos_tributarios'))
 
+    
     existe_solicitud = SolicitudEdicion.objects.filter(dato=dato, solicitante=request.user, revisado=False).exists()
     
     if existe_solicitud:
-        messages.warning(request, f"Ya has enviado una solicitud para '{dato.nombre_dato}'.")
+        messages.add_message(
+            request, 
+            messages.WARNING, 
+            f"⚠️ Ya existe una solicitud pendiente para '{dato.nombre_dato}'.",
+            extra_tags='floating_top'  
+        )
     else:
+        
         SolicitudEdicion.objects.create(
             dato=dato,
             solicitante=request.user,
             mensaje=f"Usuario {request.user.email} solicita editar dato ID {dato.id}."
         )
         
+        
         messages.add_message(
             request, 
             messages.SUCCESS, 
-            "⚠️ Un administrador ha sido notificado para aprobar tu solicitud.", 
-            extra_tags='floating_top'
+            "✅ Solicitud enviada. Un administrador ha sido notificado.", 
+            extra_tags='floating_top'  
         )
 
+    
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+        
     return redirect('listar_datos_tributarios')
