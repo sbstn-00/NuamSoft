@@ -6,4 +6,3 @@ whitenoise
 pandas
 openpyxl
 cryptography
-mysqlclient>=2.2.1
