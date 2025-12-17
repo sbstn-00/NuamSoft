@@ -589,7 +589,7 @@ def vista_carga_datos(request):
                     print(f"   - {tipo}: '{info['nombre_original']}' (índice: {info['indice']})")
                 print("=" * 60)
                 
-               
+                
                 data_records = df.to_dict('records')
                 del df
                 gc.collect()
@@ -1169,7 +1169,7 @@ def vista_carga_masiva_calificaciones(request):
                 df = pd.read_excel(archivo)
                 df.columns = df.columns.str.strip().str.upper()
                 
-               
+                
                 columnas_disponibles = list(df.columns)
                 data_records = df.to_dict('records')
                 del df
@@ -1253,6 +1253,12 @@ def vista_solicitar_edicion(request, pk):
             solicitante=request.user,
             mensaje=f"Usuario {request.user.email} solicita editar dato ID {dato.id}."
         )
-        messages.success(request, "Se ha notificado al Administrador. Espera el desbloqueo.")
+        
+        messages.add_message(
+            request, 
+            messages.SUCCESS, 
+            "⚠️ Un administrador ha sido notificado para aprobar tu solicitud.", 
+            extra_tags='floating_top'
+        )
 
     return redirect('listar_datos_tributarios')

@@ -35,7 +35,7 @@ urlpatterns = [
     
    
     path('admin-panel/atender/<int:pk>/', item_views.vista_atender_solicitud, name='atender_solicitud'),
-    path('admin-panel/desbloquear/<int:pk>/', item_views.vista_aprobar_desbloqueo, name='aprobar_desbloqueo'), # <--- ESTA FALTABA
+    path('admin-panel/desbloquear/<int:pk>/', item_views.vista_aprobar_desbloqueo, name='aprobar_desbloqueo'), 
     
     
     path('calificaciones/', item_views.vista_calificaciones_dashboard, name='calificaciones_dashboard'),
