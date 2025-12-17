@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
@@ -97,8 +96,7 @@ if DATABASES['default']:
         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
     }
 else:
-    # Bloque de Respaldo: Si todo falla, al menos pon el ENGINE aquí.
-    # (Aunque esto podría no ser suficiente si el error ocurre antes de este punto)
+    
     DATABASES['default']['ENGINE'] = 'django.db.backends.mysql'
 
 
