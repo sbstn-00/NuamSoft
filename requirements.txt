@@ -1,6 +1,6 @@
 Django
 gunicorn
-PyMySQL
+mysqlclient>=2.2.1
 dj-database-url
 whitenoise
 pandas
